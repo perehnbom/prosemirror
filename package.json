@@ -20,7 +20,10 @@
     
     "prosemirror-state" : "latest",
     "prosemirror-view" : "latest",
-    "prosemirror-schema-basic" : "latest"
+    "prosemirror-schema-basic" : "latest",
+    "prosemirror-menu" : "latest",
+    "prosemirror-schema-list" : "latest",
+    "prosemirror-example-setup" : "latest"
   },
   "devDependencies": {
     "webpack": "latest",

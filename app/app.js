@@ -1,11 +1,30 @@
-console.log('test 2');
+const {EditorState} = require("prosemirror-state")
+const {MenuBarEditorView} = require("prosemirror-menu")
+const {DOMParser, Schema} = require("prosemirror-model")
+const {schema: baseSchema} = require("prosemirror-schema-basic")
+const {addListNodes} = require("prosemirror-schema-list")
+const {exampleSetup} = require("prosemirror-example-setup")
 
-var EditorState = require("prosemirror-state").EditorState
-var EditorView = require("prosemirror-view").EditorView
-var schema = require("prosemirror-schema-basic").schema
-
-var view = new EditorView(document.body, {
-  state: EditorState.create({schema: schema}),
+const schema = new Schema({
+  nodes: addListNodes(baseSchema.spec.nodes, "paragraph block*", "block"),
+  marks: baseSchema.spec.marks
 })
 
-console.log("finished")
+let content = document.querySelector("#content")
+content.style.display = "none"
+
+let tip = document.querySelector(".demotip")
+
+let view = new MenuBarEditorView(document.querySelector("#editor"), {
+  state: EditorState.create({
+    doc: DOMParser.fromSchema(schema).parse(content),
+    plugins: exampleSetup({schema})
+  }),
+  onFocus() {
+    if (tip) {
+      tip.innerHTML = "<a href='#demos' style='text-decoration: none; pointer-events: auto; color: inherit'>Find more demos below ↓</a>"
+      tip = null
+    }
+  }
+})
+window.view = view.editor
