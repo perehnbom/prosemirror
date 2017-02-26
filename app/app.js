@@ -15,9 +15,11 @@ content.style.display = "none"
 
 let tip = document.querySelector(".demotip")
 
+let doc = DOMParser.fromSchema(schema).parse(content);
+
 let view = new MenuBarEditorView(document.querySelector("#editor"), {
   state: EditorState.create({
-    doc: DOMParser.fromSchema(schema).parse(content),
+    doc: doc,
     plugins: exampleSetup({schema})
   }),
   onFocus() {
