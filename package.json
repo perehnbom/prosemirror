@@ -1,0 +1,29 @@
+{
+  "name": "prosemirror-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/perehnbom/prosemirror.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/perehnbom/prosemirror/issues"
+  },
+  "homepage": "https://github.com/perehnbom/prosemirror#readme",
+  "dependencies": {
+    
+    "prosemirror-state" : "latest",
+    "prosemirror-view" : "latest",
+    "prosemirror-schema-basic" : "latest"
+  },
+  "devDependencies": {
+    "webpack": "latest",
+    "webpack-dev-server": "latest"
+  }
+}
