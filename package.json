@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/webpack process.env.NODE_ENV=PROD"
   },
   "repository": {
     "type": "git",
@@ -17,13 +18,14 @@
   },
   "homepage": "https://github.com/perehnbom/prosemirror#readme",
   "dependencies": {
-    
-    "prosemirror-state" : "latest",
-    "prosemirror-view" : "latest",
-    "prosemirror-schema-basic" : "latest",
-    "prosemirror-menu" : "latest",
-    "prosemirror-schema-list" : "latest",
-    "prosemirror-example-setup" : "latest"
+    "argv": "0.0.2",
+    "prosemirror-example-setup": "latest",
+    "prosemirror-menu": "latest",
+    "prosemirror-schema-basic": "latest",
+    "prosemirror-schema-list": "latest",
+    "prosemirror-state": "latest",
+    "prosemirror-view": "latest",
+    "prosemirror-markdown": "latest"
   },
   "devDependencies": {
     "webpack": "latest",
