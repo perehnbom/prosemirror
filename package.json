@@ -18,14 +18,15 @@
   },
   "homepage": "https://github.com/perehnbom/prosemirror#readme",
   "dependencies": {
-    "argv": "0.0.2",
     "prosemirror-example-setup": "latest",
     "prosemirror-menu": "latest",
     "prosemirror-schema-basic": "latest",
     "prosemirror-schema-list": "latest",
     "prosemirror-state": "latest",
     "prosemirror-view": "latest",
-    "prosemirror-markdown": "latest"
+    "prosemirror-markdown": "latest",
+    "can": "^2.2.8",
+    "raw-loader": "^0.5.1"
   },
   "devDependencies": {
     "webpack": "latest",

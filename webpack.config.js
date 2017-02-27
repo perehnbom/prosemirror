@@ -1,7 +1,7 @@
 var path = require("path");
 var webpack = require("webpack");
 var plugins = [];
-var BUILD = true;
+var BUILD = false;
 
 if(BUILD){
   plugins.push(new webpack.optimize.UglifyJsPlugin({minimize : true}));
