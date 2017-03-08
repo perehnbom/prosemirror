@@ -3,7 +3,7 @@ $ = window.$ = require('jquery'),
 _ = window._ = require('lodash');
 require('./can-import');
 require('./text-editor/text-editor');
-
+require('./simple-text-editor/simple-text-editor');
 var appTemplate = can.stache(require('raw-loader!./app.html'))
 
 

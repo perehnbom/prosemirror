@@ -27,12 +27,21 @@ var MenuItem = function MenuItem(spec) {
 // executes the command when the representation is clicked.
 MenuItem.prototype.render = function render (view) {
   var disabled = false, spec = this.spec
-  if (spec.select && !spec.select(view.state)) {
-    if (spec.onDeselected == "disable") { disabled = true }
-    else { return null }
+  if (spec.select ) {
+    console.log('run spec.select')
+    var selectResult = spec.select(view.state);
+    if(!selectResult){
+      if (spec.onDeselected == "disable") {
+        disabled = true
+      }
+      else {
+        return null
+      }
+    }
+
   }
   var active = spec.active && !disabled && spec.active(view.state)
-
+  console.log('active' + active);
   var dom
   if (spec.render) {
     dom = spec.render(view)
@@ -231,6 +240,11 @@ exports.DropdownSubmenu = DropdownSubmenu
 // superfluous separators appear when some of the groups turn out to
 // be empty).
 function renderGrouped(view, content) {
+
+  var boldItem = content[0][0];
+  console.log('render boldItem')
+  var test = boldItem.render(view);
+
   var result = document.createDocumentFragment(), needSep = false
   for (var i = 0; i < content.length; i++) {
     var items = content[i], added = false

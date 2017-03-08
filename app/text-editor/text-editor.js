@@ -16,6 +16,8 @@ var PM = window.PM = {
 
 }
 
+
+
 can.Component.extend({
   tag: "text-editor",
   template: can.stache(require('raw-loader!./text-editor.html')),
@@ -39,7 +41,7 @@ can.Component.extend({
 });
 
 function initProsemirror(element){
-  var schema = new Schema({
+  var schema = PM.schema = new Schema({
     nodes: addListNodes(baseSchema.spec.nodes, "paragraph block*", "block"),
     marks: baseSchema.spec.marks
   })
@@ -47,7 +49,7 @@ function initProsemirror(element){
   var content = document.querySelector("#content")
   content.style.display = "none"
   //var content = "text to be displayed";
-  PM.toggleStrong = toggleMark(schema.marks.strong);
+  PM.toggleStrong = toggleMark(PM.schema.marks.strong);
 
   var doc = DOMParser.fromSchema(schema).parse(content);
 

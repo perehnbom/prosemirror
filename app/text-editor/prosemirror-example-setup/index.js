@@ -57,13 +57,14 @@ function exampleSetup(options) {
   ]
   if (options.history !== false) { plugins.push(history()) }
 
-  return plugins.concat(new Plugin({
+  var menuPlugin = new Plugin({
     props: {
       attributes: {class: "ProseMirror-example-setup-style"},
       menuContent: buildMenuItems(options.schema).fullMenu,
       floatingMenu: true
     }
-  }))
+  });
+  return plugins.concat(menuPlugin);
 }
 exports.exampleSetup = exampleSetup
 

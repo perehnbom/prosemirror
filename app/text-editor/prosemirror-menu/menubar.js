@@ -27,14 +27,19 @@ var MenuBarEditorView = function MenuBarEditorView(place, props) {
   this.wrapper = crel("div", {class: prefix + "-wrapper"})
   if (place && place.appendChild) { place.appendChild(this.wrapper) }
   else if (place) { place(this.wrapper) }
-  if (!props.dispatchTransaction)
-    { props.dispatchTransaction = function (tr) { return this$1.updateState(this$1.editor.state.apply(tr)); } }
+  if (!props.dispatchTransaction){
+    props.dispatchTransaction = function (tr) {
+      console.log('dispatchTransaction');
+      var newState = this$1.editor.state.apply(tr);
+      return this$1.updateState(newState);
+    }
+  }
   // :: EditorView The wrapped editor view. _Don't_ directly call
   // `update` or `updateState` on this, always go through the
   // wrapping view.
   this.editor = new EditorView(this.wrapper, props)
   PM.editor = this.editor;
-  
+
   this.menu = crel("div", {class: prefix})
   this.menu.className = prefix
   this.spacer = null
@@ -47,7 +52,7 @@ var MenuBarEditorView = function MenuBarEditorView(place, props) {
 
   // :: EditorProps The current props of this view.
   this.props = props
-  this.updateMenu()
+  this.renderMenu()
 
   if (this.editor.someProp("floatingMenu")) {
     this.updateFloat()
@@ -76,11 +81,19 @@ MenuBarEditorView.prototype.updateState = function updateState (state) {
   this.updateMenu()
 };
 
+MenuBarEditorView.prototype.renderMenu = function() {
+  this.menu.appendChild(renderGrouped(this.editor, this.editor.someProp("menuContent")))
+}
+
 MenuBarEditorView.prototype.updateMenu = function updateMenu () {
   console.log('updateMenu')
-  this.menu.textContent = ""
-  this.menu.appendChild(renderGrouped(this.editor, this.editor.someProp("menuContent")))
 
+  this.menu.textContent = ""
+
+  var menuContent = this.editor.someProp("menuContent");
+  var menuEl = renderGrouped(this.editor, menuContent);
+  this.menu.appendChild(menuEl)
+/*
   if (this.floating) {
     this.updateScrollCursor()
   } else {
@@ -93,6 +106,7 @@ MenuBarEditorView.prototype.updateMenu = function updateMenu () {
       this.menu.style.minHeight = this.maxHeight + "px"
     }
   }
+  */
 };
 
 
