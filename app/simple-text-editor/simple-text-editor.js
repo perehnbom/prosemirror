@@ -4,7 +4,8 @@ $ = window.$ = require('jquery');
 var EditorState = require("prosemirror-state").EditorState
 var DOMParser = require("prosemirror-model").DOMParser
 
-var toggleMark = require("prosemirror-commands").toggleMark;
+var ProseMirrorCommands = require("prosemirror-commands");
+var toggleMark = ProseMirrorCommands.toggleMark;
 
 var ProseMirrorInputRules = require("prosemirror-inputrules");
 
@@ -31,7 +32,14 @@ can.Component.extend({
     },
     markMenu : function(state){
 
+
+      var $from = state.selection.$from;
+      console.log($from.parent.type);
+      
       this.commands.each(function(command){
+        if(!command.mark){
+          return;
+        }
         var active = markActive(state, command.mark);
         command.attr('active', !!active);
       })
@@ -40,7 +48,7 @@ can.Component.extend({
   events: {
     inserted: function(){
         console.log('inserted')
-        initProsemirror(this.element, this.viewModel);
+        initProsemirror(this.element, this.viewModel, "test text");
     },
     'removed' : function(){
       this.viewModel.editor.destroy();
@@ -49,7 +57,13 @@ can.Component.extend({
       ev.preventDefault();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
-      command.toggle(editor.state, editor.dispatch);
+      command.run(editor.state, editor.dispatch);
+    },
+    '.set-heading click' : function(el,ev){
+      ev.preventDefault();
+      var command = this.viewModel.commands.attr(el.attr('command'));
+      var editor = this.viewModel.editor;
+      command.run(editor.state, editor.dispatch);
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
@@ -108,24 +122,46 @@ function initProsemirror(element, viewModel, markdown){
   })
 
   viewModel.commands.attr('strong', {
-    toggle : toggleMark(schema.marks.strong),
+    run : toggleMark(schema.marks.strong),
     mark : schema.marks.strong
   })
   viewModel.commands.attr('em', {
-    toggle : toggleMark(schema.marks.em),
+    run : toggleMark(schema.marks.em),
     mark : schema.marks.em
   })
+
+  viewModel.commands.attr('h2', {
+    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+      level : 2
+    })
+  })
+  viewModel.commands.attr('h3', {
+    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+      level : 3
+    })
+  })
+
 
 }
 
 function markActive(state, type) {
-  var ref = state.selection;
-  var from = ref.from;
-  var $from = ref.$from;
-  var to = ref.to;
-  var empty = ref.empty;
-  if (empty) { return type.isInSet(state.storedMarks || $from.marks()) }
-  else { return state.doc.rangeHasMark(from, to, type) }
+  var selection = state.selection;
+  console.log(selection);
+  var doc = state.doc;
+
+  var from = selection.from;
+  var $from = selection.$from;
+  var to = selection.to;
+  var empty = selection.empty;
+
+
+
+  if (empty) {
+    return type.isInSet(state.storedMarks || $from.marks())
+  }
+  else {
+    return state.doc.rangeHasMark(from, to, type)
+  }
 }
 
 function initPlugins(schema){
