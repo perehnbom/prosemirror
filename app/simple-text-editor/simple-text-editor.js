@@ -31,17 +31,34 @@ can.Component.extend({
 
     },
     markMenu : function(state){
-
+      
+      var selection = state.selection;
 
       var $from = state.selection.$from;
-      console.log($from.parent.type);
+      var blockType = $from.parent.type.name;
+      
+      
+      var nodeJson = $from.parent.toJSON();
+      
       
       this.commands.each(function(command){
-        if(!command.mark){
-          return;
+        if(command.paragraph){
+          command.attr('active', blockType === 'paragraph');
+        }else if(command.heading){
+          var active = false;
+          if(blockType === 'heading'){
+            
+            
+            var type = $from.parent.type;
+            active = nodeJson.attrs.level == command.heading;
+          }
+          command.attr('active', active);
+          
+        }else if(command.mark){
+          var active = markActive(state, command.mark);
+          command.attr('active', !!active);
         }
-        var active = markActive(state, command.mark);
-        command.attr('active', !!active);
+        
       })
     }
   },
@@ -94,10 +111,6 @@ can.Component.extend({
         initProsemirror(this.element, this.viewModel, markdown);
       }
 
-
-
-
-
     }
   }
 });
@@ -130,15 +143,28 @@ function initProsemirror(element, viewModel, markdown){
     mark : schema.marks.em
   })
 
+
+  viewModel.commands.attr('paragraph', {
+    run : ProseMirrorCommands.setBlockType(schema.nodes.paragraph),
+    paragraph : true
+  })
+  viewModel.commands.attr('h1', {
+    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+      level : 1
+    }),
+    heading : 1
+  })
   viewModel.commands.attr('h2', {
     run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
       level : 2
-    })
+    }),
+    heading : 2
   })
   viewModel.commands.attr('h3', {
     run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
       level : 3
-    })
+    }),
+    heading : 3
   })
 
 
@@ -146,21 +172,11 @@ function initProsemirror(element, viewModel, markdown){
 
 function markActive(state, type) {
   var selection = state.selection;
-  console.log(selection);
-  var doc = state.doc;
 
-  var from = selection.from;
-  var $from = selection.$from;
-  var to = selection.to;
-  var empty = selection.empty;
-
-
-
-  if (empty) {
-    return type.isInSet(state.storedMarks || $from.marks())
-  }
-  else {
-    return state.doc.rangeHasMark(from, to, type)
+  if (selection.empty) {
+    return type.isInSet(state.storedMarks || selection.$from.marks())
+  } else {
+    return state.doc.rangeHasMark(selection.from, selection.to, type)
   }
 }
 
@@ -173,24 +189,12 @@ function initPlugins(schema){
   ]
   return plugins;
 
-/*
-  var menuPlugin = new Plugin({
-    props: {
-      attributes: {class: "ProseMirror-example-setup-style"},
-      menuContent: buildMenuItems(options.schema).fullMenu,
-      floatingMenu: true
-    }
-  });
-  return plugins.concat(menuPlugin);
-  */
 }
 
 function initDoc(markdown){
   markdown = markdown || "";
   var doc = ProseMirrorMarkdown.defaultMarkdownParser.parse(markdown);
   return doc;
-
-  //return DOMParser.fromSchema(schema).parse(content);
 }
 
 
