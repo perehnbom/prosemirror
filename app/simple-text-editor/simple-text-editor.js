@@ -5,7 +5,7 @@ var EditorState = require("prosemirror-state").EditorState
 var DOMParser = require("prosemirror-model").DOMParser
 
 var ProseMirrorCommands = require("prosemirror-commands");
-var toggleMark = ProseMirrorCommands.toggleMark;
+
 
 var ProseMirrorInputRules = require("prosemirror-inputrules");
 
@@ -18,7 +18,7 @@ var baseKeymap = require("prosemirror-commands").baseKeymap;
 var history = require("prosemirror-history").history;
 var EditorView = require("prosemirror-view").EditorView;
 
-var toggleMark = require("prosemirror-commands").toggleMark;
+var ProseMirrorSchemaList = require("prosemirror-schema-list")
 
 var ProseMirrorMarkdown = require("prosemirror-markdown");
 
@@ -39,7 +39,7 @@ can.Component.extend({
       
       
       var nodeJson = $from.parent.toJSON();
-      
+      console.log(nodeJson)
       
       this.commands.each(function(command){
         if(command.paragraph){
@@ -135,14 +135,20 @@ function initProsemirror(element, viewModel, markdown){
   })
 
   viewModel.commands.attr('strong', {
-    run : toggleMark(schema.marks.strong),
+    run : ProseMirrorCommands.toggleMark(schema.marks.strong),
     mark : schema.marks.strong
   })
   viewModel.commands.attr('em', {
-    run : toggleMark(schema.marks.em),
+    run : ProseMirrorCommands.toggleMark(schema.marks.em),
     mark : schema.marks.em
   })
-
+  viewModel.commands.attr('bullet_list', {
+    run : ProseMirrorSchemaList.wrapInList(schema.nodes.bullet_list)
+  })
+  viewModel.commands.attr('ordered_list', {
+    run : ProseMirrorSchemaList.wrapInList(schema.nodes.ordered_list)
+  })
+  
 
   viewModel.commands.attr('paragraph', {
     run : ProseMirrorCommands.setBlockType(schema.nodes.paragraph),
