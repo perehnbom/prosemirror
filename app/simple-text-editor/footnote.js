@@ -18,8 +18,15 @@ const footnote = {
   parseDOM: [{tag: "footnote"}]
 }
 
+// TODO select function
+function select(state, schema){
+  return insertPoint(state.doc, state.selection.from, schema.nodes.footnote) != null
+}
+
+
 function initRun(schema){
   return function(state, dispatch) {
+    
     let {empty, $from, $to} = state.selection, content = Fragment.empty
     if (!empty && $from.sameParent($to) && $from.parent.inlineContent)
       content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)

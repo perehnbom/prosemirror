@@ -75,6 +75,7 @@ class FootnoteView {
   }
 
   dispatchInner(tr) {
+    console.log('dispatchInner')
     let {state, transactions} = this.innerView.state.applyTransaction(tr)
     this.innerView.updateState(state)
 

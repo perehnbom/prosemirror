@@ -11,6 +11,11 @@ const buildKeymap = require('./buildkeymap');
 
 const {footnote} = require("./footnote")
 
+
+defaultMarkdownSerializer.nodes.footnote = function(state, node){
+  state.write("[" + "itemlink" + "](#itemid)");          
+}
+
 exports.initSchema = function(){
   
   var newSchema = new Schema({
@@ -51,5 +56,8 @@ function initDoc(schema, markdown){
 
 
   var doc = parser.parse(markdown);
+  
+  
+  
   return doc;
 }

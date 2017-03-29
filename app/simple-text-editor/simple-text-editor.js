@@ -96,7 +96,9 @@ function initProsemirror(element, viewModel, markdown){
       menu.markMenu(newState, viewModel);
     },
     nodeViews: {
-      footnote(node, view, getPos) { return new FootnoteView(node, view, getPos) }
+      footnote(node, view, getPos) { 
+        return new FootnoteView(node, view, getPos) 
+      }
     }
   })
   menu.initCommands(viewModel.commands, schema);
