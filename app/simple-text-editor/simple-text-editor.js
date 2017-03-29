@@ -13,6 +13,7 @@ var prosemirror = {
   transform : require("prosemirror-transform")
 }
 
+const {linkifyPlugin} = require('./linkify-plugin')
 
 var Schema = prosemirror.model.Schema,
   EditorState = prosemirror.state.EditorState,
@@ -240,17 +241,6 @@ function markActive(state, type) {
 }
 
 function initPlugins(schema){
-  var linkPlugin = new Plugin({
-    props: {
-      transformPasted: function(slice){
-        console.log('transformPasted')
-
-        return new Slice(linkify(slice.content), slice.openLeft, slice.openRight)
-
-        return slice;
-      }
-    }
-  })
 
 
   var plugins = [
@@ -258,7 +248,7 @@ function initPlugins(schema){
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     history(),
-    linkPlugin
+    linkifyPlugin()
   ]
   return plugins;
 
