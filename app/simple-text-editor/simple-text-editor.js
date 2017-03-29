@@ -6,7 +6,7 @@ var prosemirror = {
   state : require("prosemirror-state"),
   view : require("prosemirror-view"),
 }
-
+const {FootnoteView} = require("./footnote")
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
 const menu = require('./menu');
@@ -49,7 +49,12 @@ can.Component.extend({
   
       console.log(prosemirrorHandler.toMarkdown(this.viewModel.editor));
     },
-
+    '.insert-footnote click' : function(el,ev){
+      ev.preventDefault();
+      var command = this.viewModel.commands.attr(el.attr('command'));
+      var editor = this.viewModel.editor;
+      command.run(editor.state, editor.dispatch);
+    },
 
 
     '#toggle-view click' : function(el,ev){
@@ -89,6 +94,9 @@ function initProsemirror(element, viewModel, markdown){
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
       menu.markMenu(newState, viewModel);
+    },
+    nodeViews: {
+      footnote(node, view, getPos) { return new FootnoteView(node, view, getPos) }
     }
   })
   menu.initCommands(viewModel.commands, schema);

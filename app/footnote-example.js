@@ -18,16 +18,8 @@ const footnote = {
   parseDOM: [{tag: "footnote"}]
 }
 
-function initRun(schema){
-  return function(state, dispatch) {
-    let {empty, $from, $to} = state.selection, content = Fragment.empty
-    if (!empty && $from.sameParent($to) && $from.parent.inlineContent)
-      content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
-    dispatch(state.tr.replaceSelectionWith(schema.nodes.footnote.create(null, content)))
-  }
-}
+exports.footnote = footnote;
 
-/*
 const footnoteSchema = new Schema({
   nodes: schema.spec.nodes.addBefore("image", "footnote", footnote),
   marks: schema.spec.marks
@@ -47,7 +39,7 @@ menu.insertMenu.content.push(new MenuItem({
     dispatch(state.tr.replaceSelectionWith(footnoteSchema.nodes.footnote.create(null, content)))
   }
 }))
-*/
+
 class FootnoteView {
   constructor(node, view, getPos) {
     this.node = node
@@ -61,6 +53,7 @@ class FootnoteView {
   }
 
   selectNode() {
+    console.log('selectNode')
     if (!this.open) {
       this.open = true
       this.dom.classList.add("ProseMirror-selectednode")
@@ -133,7 +126,7 @@ class FootnoteView {
 
   ignoreMutation() { return true }
 }
-/*
+
 window.view = new EditorView(document.querySelector("#editor"), {
   state: EditorState.create({
     doc: DOMParser.fromSchema(footnoteSchema).parse(document.querySelector("#content")),
@@ -143,8 +136,3 @@ window.view = new EditorView(document.querySelector("#editor"), {
     footnote(node, view, getPos) { return new FootnoteView(node, view, getPos) }
   }
 })
-*/
-
-exports.initRunFootnote = initRun;
-exports.footnote = footnote;
-exports.FootnoteView = FootnoteView;

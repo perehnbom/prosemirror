@@ -1,5 +1,5 @@
 const {toggleMark, setBlockType} = require("prosemirror-commands")
-
+const {initRunFootnote} = require("./footnote")
 exports.initCommands = function(commands, schema){
   commands.attr('strong', {
     run : toggleMark(schema.marks.strong),
@@ -32,8 +32,12 @@ exports.initCommands = function(commands, schema){
       level : 3
     }),
     heading : 3
+  }),
+  commands.attr('footnote', {
+    run : initRunFootnote(schema)
   })
 }
+
 
 exports.markMenu = function(state, vm){
   var selection = state.selection;

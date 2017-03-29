@@ -9,10 +9,12 @@ const {linkifyPlugin} = require('./linkify-plugin')
 const {buildInputRules} = require('./input-rules')
 const buildKeymap = require('./buildkeymap');
 
+const {footnote} = require("./footnote")
+
 exports.initSchema = function(){
   
   var newSchema = new Schema({
-    nodes: schema.spec.nodes,
+    nodes: schema.spec.nodes.addBefore("image", "footnote", footnote),
     marks: schema.spec.marks
   })
   
