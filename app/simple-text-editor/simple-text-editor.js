@@ -4,7 +4,7 @@ $ = window.$ = require('jquery');
 var prosemirror = {
   model : require("prosemirror-model"),
   state : require("prosemirror-state"),
-  commands : require("prosemirror-commands"),
+
   
   keymap : require("prosemirror-keymap"),
   history : require("prosemirror-history"),
@@ -14,20 +14,21 @@ var prosemirror = {
 }
 
 const {linkifyPlugin} = require('./linkify-plugin')
-const helpers = require('./helpers')
-
+const {buildInputRules} = require('./input-rules')
+const {baseKeymap} = require('prosemirror-commands')
+const menu = require('./menu')
 var Schema = prosemirror.model.Schema,
   EditorState = prosemirror.state.EditorState,
   Plugin = prosemirror.state.Plugin,
   DOMParser = prosemirror.model.DOMParser,
   Slice = prosemirror.model.Slice,
   Fragment = prosemirror.model.Fragment,
-  toggleMark = prosemirror.commands.toggleMark,
+  
   keymap = prosemirror.keymap.keymap,
   history = prosemirror.history.history,
-  baseKeymap = prosemirror.commands.baseKeymap,
+
   EditorView = prosemirror.view.EditorView,
-  toggleMark = prosemirror.commands.toggleMark,
+
   insertPoint = prosemirror.transform.insertPoint,
   buildKeymap = require('./buildkeymap');
 
@@ -41,14 +42,14 @@ can.Component.extend({
     markdownMode : false,
     commands : {
 
-    },
-    markMenu : markMenu
+    }
   },
 
   events: {
     inserted: function(){
         console.log('inserted')
         initProsemirror(this.element, this.viewModel, "test text");
+        
     },
     'removed' : function(){
       this.viewModel.editor.destroy();
@@ -57,6 +58,7 @@ can.Component.extend({
       ev.preventDefault();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
+      
       command.run(editor.state, editor.dispatch);
     },
     '.set-heading click' : function(el,ev){
@@ -130,68 +132,25 @@ function initProsemirror(element, viewModel, markdown){
       editor.updateState(newState)
       console.log('should update menu')
 
-      viewModel.markMenu(newState);
+      menu.markMenu(newState, viewModel);
     }
   })
-
-  viewModel.commands.attr('strong', {
-    run : toggleMark(schema.marks.strong),
-    mark : schema.marks.strong
-  })
-  viewModel.commands.attr('em', {
-    run : toggleMark(schema.marks.em),
-    mark : schema.marks.em
-  })
-
-
-  viewModel.commands.attr('paragraph', {
-    run : prosemirror.commands.setBlockType(schema.nodes.paragraph),
-    paragraph : true
-  })
-  viewModel.commands.attr('h1', {
-    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
-      level : 1
-    }),
-    heading : 1
-  })
-  viewModel.commands.attr('h2', {
-    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
-      level : 2
-    }),
-    heading : 2
-  })
-  viewModel.commands.attr('h3', {
-    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
-      level : 3
-    }),
-    heading : 3
-  })
-
-
+  
+  menu.initCommands(viewModel.commands, schema);
 }
 
-function markActive(state, type) {
-  var selection = state.selection;
 
-  if (selection.empty) {
-    return type.isInSet(state.storedMarks || selection.$from.marks())
-  } else {
-    return state.doc.rangeHasMark(selection.from, selection.to, type)
-  }
-}
 
 function initPlugins(schema){
 
-
   var plugins = [
-    helpers.buildInputRules(schema),
+    buildInputRules(schema),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     history(),
     linkifyPlugin()
   ]
   return plugins;
-
 }
 
 function initDoc(markdown){
@@ -205,37 +164,4 @@ function initDoc(markdown){
   //var doc = ProseMirrorMarkdown.defaultMarkdownParser.parse(markdown);
   var doc = parser.parse(markdown);
   return doc;
-}
-
-
-function markMenu(state){
-  var selection = state.selection;
-
-  var $from = state.selection.$from;
-  var blockType = $from.parent.type.name;
-
-
-  var nodeJson = $from.parent.toJSON();
-
-
-  this.commands.each(function(command){
-    if(command.paragraph){
-      command.attr('active', blockType === 'paragraph');
-    }else if(command.heading){
-      var active = false;
-      if(blockType === 'heading'){
-
-
-        var type = $from.parent.type;
-        active = nodeJson.attrs.level == command.heading;
-      }
-      command.attr('active', active);
-
-    }else if(command.mark){
-      var active = markActive(state, command.mark);
-      command.attr('active', !!active);
-    }
-
-  })
-
 }
