@@ -15,6 +15,7 @@ var prosemirror = {
 
 const {linkifyPlugin} = require('./linkify-plugin')
 const {buildInputRules} = require('./input-rules')
+const prosemirrorHandler = require('./prosemirror-handler');
 const {baseKeymap} = require('prosemirror-commands')
 const menu = require('./menu')
 var Schema = prosemirror.model.Schema,
@@ -106,36 +107,25 @@ can.Component.extend({
 function initProsemirror(element, viewModel, markdown){
 
 
-  var markdownSchema = prosemirror.markdown.schema;
+  
 
-
-
-  var newSchema = new Schema({
-    nodes: markdownSchema.spec.nodes,
-    marks: markdownSchema.spec.marks
-  })
-
-  schema = newSchema;
-
-
+  schema = prosemirrorHandler.initSchema();
+  
 
   var initialState = EditorState.create({
     doc: initDoc(markdown),
     plugins: initPlugins(schema)
   });
 
+
   var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
     state : initialState,
     dispatchTransaction : function(tr){
-      console.log('dispatchTransaction');
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
-      console.log('should update menu')
-
       menu.markMenu(newState, viewModel);
     }
   })
-  
   menu.initCommands(viewModel.commands, schema);
 }
 
