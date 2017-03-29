@@ -4,36 +4,12 @@ $ = window.$ = require('jquery');
 var prosemirror = {
   model : require("prosemirror-model"),
   state : require("prosemirror-state"),
-
-  
-  keymap : require("prosemirror-keymap"),
-  history : require("prosemirror-history"),
   view : require("prosemirror-view"),
-  markdown : require("prosemirror-markdown"),
-  transform : require("prosemirror-transform")
 }
 
-const {linkifyPlugin} = require('./linkify-plugin')
-const {buildInputRules} = require('./input-rules')
+const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
-const {baseKeymap} = require('prosemirror-commands')
-const menu = require('./menu')
-var Schema = prosemirror.model.Schema,
-  EditorState = prosemirror.state.EditorState,
-  Plugin = prosemirror.state.Plugin,
-  DOMParser = prosemirror.model.DOMParser,
-  Slice = prosemirror.model.Slice,
-  Fragment = prosemirror.model.Fragment,
-  
-  keymap = prosemirror.keymap.keymap,
-  history = prosemirror.history.history,
-
-  EditorView = prosemirror.view.EditorView,
-
-  insertPoint = prosemirror.transform.insertPoint,
-  buildKeymap = require('./buildkeymap');
-
-var schema;
+const menu = require('./menu');
 
 
 can.Component.extend({
@@ -70,9 +46,8 @@ can.Component.extend({
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
-      var editor = this.viewModel.editor;
-      var content = prosemirror.markdown.defaultMarkdownSerializer.serialize(editor.state.doc);
-      console.log(content);
+  
+      console.log(prosemirrorHandler.toMarkdown(this.viewModel.editor));
     },
 
 
@@ -83,7 +58,7 @@ can.Component.extend({
       var vm = this.viewModel;
       if(!vm.markdownMode){
 
-        var content = prosemirror.markdown.defaultMarkdownSerializer.serialize(vm.editor.state.doc);
+        var content = prosemirrorHandler.toMarkdown(this.viewModel.editor);
 
         this.element.find(".content").html("");
         var te = this.element.find(".content")[0].appendChild(document.createElement("textarea"))
@@ -106,20 +81,10 @@ can.Component.extend({
 
 function initProsemirror(element, viewModel, markdown){
 
-
-  
-
-  schema = prosemirrorHandler.initSchema();
-  
-
-  var initialState = EditorState.create({
-    doc: initDoc(markdown),
-    plugins: initPlugins(schema)
-  });
-
+  var schema = prosemirrorHandler.initSchema();
 
   var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
-    state : initialState,
+    state : prosemirrorHandler.initialState(schema, markdown),
     dispatchTransaction : function(tr){
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
@@ -127,31 +92,4 @@ function initProsemirror(element, viewModel, markdown){
     }
   })
   menu.initCommands(viewModel.commands, schema);
-}
-
-
-
-function initPlugins(schema){
-
-  var plugins = [
-    buildInputRules(schema),
-    keymap(buildKeymap(schema)),
-    keymap(baseKeymap),
-    history(),
-    linkifyPlugin()
-  ]
-  return plugins;
-}
-
-function initDoc(markdown){
-  markdown = markdown || "";
-
-  var parser = new prosemirror.markdown.MarkdownParser(schema,
-                                  prosemirror.markdown.defaultMarkdownParser.tokenizer,
-                                  prosemirror.markdown.defaultMarkdownParser.tokens)
-
-
-  //var doc = ProseMirrorMarkdown.defaultMarkdownParser.parse(markdown);
-  var doc = parser.parse(markdown);
-  return doc;
 }
