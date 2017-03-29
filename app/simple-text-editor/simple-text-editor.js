@@ -5,7 +5,7 @@ var prosemirror = {
   model : require("prosemirror-model"),
   state : require("prosemirror-state"),
   commands : require("prosemirror-commands"),
-  inputrules : require("prosemirror-inputrules"),
+  
   keymap : require("prosemirror-keymap"),
   history : require("prosemirror-history"),
   view : require("prosemirror-view"),
@@ -14,6 +14,7 @@ var prosemirror = {
 }
 
 const {linkifyPlugin} = require('./linkify-plugin')
+const helpers = require('./helpers')
 
 var Schema = prosemirror.model.Schema,
   EditorState = prosemirror.state.EditorState,
@@ -31,17 +32,6 @@ var Schema = prosemirror.model.Schema,
   buildKeymap = require('./buildkeymap');
 
 var schema;
-
-class TestView{
-  constructor(){
-    
-  }
-  
-  testRun() {
-    return "HELLO"
-  }
-}
-
 
 
 can.Component.extend({
@@ -82,42 +72,7 @@ can.Component.extend({
       console.log(content);
     },
 
-    '.insert-link click' : function(el,ev){
-      ev.preventDefault();
-      var editor = this.viewModel.editor;
-      var state = editor.state;
 
-      //var transaction = state.tr.insertText("testTEXT")
-      //editor.dispatch(transaction);
-
-      insertTestLink();
-      //insertSeachTarget();
-
-
-
-      function insertTestLink(){
-        // see example setup to insert link
-        var linkType = schema.nodes.itemlink;
-        var node = linkType.create({
-          href : 'http://www.google.com',
-          text : 'google link'
-        });
-        //var node = ProseMirrorMarkdown.schema.nodes.paragraph;
-        var transaction = state.tr.replaceSelectionWith(node, true);
-        editor.dispatch(transaction)
-      }
-
-      function insertSeachTarget(){
-        // Create searchtarget using decoration, see prosemirror-droptarget example
-        var newNodeType = schema.nodes.search;
-        var newNode = newNodeType.create({level : 1});
-        //var node = ProseMirrorMarkdown.schema.nodes.paragraph;
-        var transaction2 = state.tr.replaceSelectionWith(newNode, true);
-        editor.dispatch(transaction2)
-      }
-
-      //insertPoint(state.doc, state.selection.from, newNode)
-    },
 
     '#toggle-view click' : function(el,ev){
       ev.preventDefault();
@@ -152,24 +107,9 @@ function initProsemirror(element, viewModel, markdown){
   var markdownSchema = prosemirror.markdown.schema;
 
 
-  var searchNode = {
-    content: "inline<_>*",
-    group: "block",
-    parseDOM: [{ tag: 'search' }],
-    toDOM : function(){
-      return ['search']
-    }
-  };
-  var linkNode = {
-    content: "inline<_>*",
-    group: "block",
-    parseDOM: [{ tag: 'itemlink' }],
-    toDOM : function(){
-      return ['itemlink']
-    }
-  };
+
   var newSchema = new Schema({
-    nodes: markdownSchema.spec.nodes.addToEnd('search', searchNode).addToEnd('itemlink', linkNode),
+    nodes: markdownSchema.spec.nodes,
     marks: markdownSchema.spec.marks
   })
 
@@ -244,7 +184,7 @@ function initPlugins(schema){
 
 
   var plugins = [
-    prosemirror.inputrules.inputRules({rules: prosemirror.inputrules.allInputRules.concat(buildInputRules(schema))}),
+    helpers.buildInputRules(schema),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     history(),
@@ -267,44 +207,6 @@ function initDoc(markdown){
   return doc;
 }
 
-
-//const HTTP_LINK_REGEX = /\bhttps?:\/\/[\w_\/\.]+/g
-var HTTP_LINK_REGEX = /((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g
-var linkify = function(fragment){
-  var linkified = []
-  fragment.forEach(function(child){
-    if (child.isText) {
-      var text = child.text
-      var pos = 0, match
-
-      while (match = HTTP_LINK_REGEX.exec(text)) {
-        var start = match.index
-        var end = start + match[0].length
-        var link = child.type.schema.marks['link']
-
-        // simply copy across the text from before the match
-        if (start > 0) {
-          linkified.push(child.cut(pos, start))
-        }
-
-        var urlText = text.slice(start, end)
-        linkified.push(
-          child.cut(start, end).mark(link.create({href: urlText}).addToSet(child.marks))
-        )
-        pos = end
-      }
-
-      // copy over whatever is left
-      if (pos < text.length) {
-        linkified.push(child.cut(pos))
-      }
-    } else {
-      linkified.push(child.copy(linkify(child.content)))
-    }
-  })
-
-  return Fragment.fromArray(linkified)
-}
 
 function markMenu(state){
   var selection = state.selection;
@@ -336,14 +238,4 @@ function markMenu(state){
 
   })
 
-}
-
-function buildInputRules(schema) {
-  var result = [], type
-  if (type = schema.nodes.blockquote) { result.push(prosemirror.inputrules.blockQuoteRule(type)) }
-  if (type = schema.nodes.ordered_list) { result.push(prosemirror.inputrules.orderedListRule(type)) }
-  if (type = schema.nodes.bullet_list) { result.push(prosemirror.inputrules.bulletListRule(type)) }
-  if (type = schema.nodes.code_block) { result.push(prosemirror.inputrules.codeBlockRule(type)) }
-  if (type = schema.nodes.heading) { result.push(prosemirror.inputrules.headingRule(type, 6)) }
-  return result
 }
