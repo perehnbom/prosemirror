@@ -10,17 +10,32 @@ const {buildInputRules} = require('./input-rules')
 const buildKeymap = require('./buildkeymap');
 
 const {footnote} = require("./footnote")
-
+const {link} = require("./link")
 
 defaultMarkdownSerializer.nodes.footnote = function(state, node){
+  state.write("[" + "footnote" + "](#itemid)");          
+}
+defaultMarkdownSerializer.nodes.link = function(state, node){
   state.write("[" + "itemlink" + "](#itemid)");          
+}
+
+delete defaultMarkdownParser.schema.marks.link
+
+defaultMarkdownParser.tokens.link = {
+  node: "link", 
+  attrs: tok => ({
+    href: tok.attrGet("href"),
+    type: 'link',
+    title: tok.attrGet("title") || null
+  })
 }
 
 exports.initSchema = function(){
   
+  
   var newSchema = new Schema({
-    nodes: schema.spec.nodes.addBefore("image", "footnote", footnote),
-    marks: schema.spec.marks
+    nodes: schema.spec.nodes.addBefore("image", "footnote", footnote).addBefore("image", "link", link),
+    marks: schema.spec.marks.remove('link')
   })
   
   return newSchema;
@@ -51,10 +66,10 @@ function initPlugins(schema){
 
 function initDoc(schema, markdown){
   markdown = markdown || "";
-
+  
   var parser = new MarkdownParser(schema, defaultMarkdownParser.tokenizer, defaultMarkdownParser.tokens)
-
-
+  
+  
   var doc = parser.parse(markdown);
   
   

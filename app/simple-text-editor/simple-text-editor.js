@@ -7,6 +7,7 @@ var prosemirror = {
   view : require("prosemirror-view"),
 }
 const {FootnoteView} = require("./footnote")
+const {LinkView} = require("./link")
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
 const menu = require('./menu');
@@ -98,6 +99,9 @@ function initProsemirror(element, viewModel, markdown){
     nodeViews: {
       footnote(node, view, getPos) { 
         return new FootnoteView(node, view, getPos) 
+      },
+      link(node, view, getPos) {
+        return new LinkView(node, view, getPos)
       }
     }
   })

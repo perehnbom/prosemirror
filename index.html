@@ -57,6 +57,11 @@
     height: 0;
     width: 0;
   }
+  
+  a[type="link"]::after {
+    content: attr(title);
+  }
+  
   </style>
 </head>
 <body>

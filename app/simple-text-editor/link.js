@@ -8,20 +8,27 @@ const {schema} = require("prosemirror-schema-basic")
 const {exampleSetup, buildMenuItems} = require("prosemirror-example-setup")
 
 
-const footnote = {
-  group: "inline",
-  content: "inline*",
+
+const link = {
   inline: true,
+  attrs: {
+    href: {},
+    type: {default: "link"},
+    title: {default: " "}
+  },
+  group: "inline",
   draggable: true,
   atom: true,
-  toDOM: () => ["footnote", 0],
-  parseDOM: [{tag: "footnote"}]
+  parseDOM: [{tag: "a[href]", getAttrs(dom) {
+    return {
+      href: dom.getAttribute("href"),
+      type: dom.getAttribute("type"),
+      title: dom.getAttribute("title")
+    }
+  }}],
+  toDOM(node) { return ["a", node.attrs] }
 }
 
-// TODO select function
-function select(state, schema){
-  return insertPoint(state.doc, state.selection.from, schema.nodes.footnote) != null
-}
 
 
 function initRun(schema){
@@ -29,41 +36,25 @@ function initRun(schema){
     
     let {empty, $from, $to} = state.selection, 
       content = Fragment.empty
-    if (!empty && $from.sameParent($to) && $from.parent.inlineContent)
+    if (!empty && $from.sameParent($to) && $from.parent.inlineContent){
       content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
+    }
       
-    dispatch(state.tr.replaceSelectionWith(schema.nodes.footnote.create(null, content)))
+      
+    console.log('create link')
+    dispatch(state.tr.replaceSelectionWith(schema.nodes.link.create({href : 'www.google.com', type : "link", title : "My link"}, content)))
   }
 }
 
-/*
-const footnoteSchema = new Schema({
-  nodes: schema.spec.nodes.addBefore("image", "footnote", footnote),
-  marks: schema.spec.marks
-})
-
-let menu = buildMenuItems(footnoteSchema)
-menu.insertMenu.content.push(new MenuItem({
-  title: "Insert footnote",
-  label: "Footnote",
-  select(state) {
-    return insertPoint(state.doc, state.selection.from, footnoteSchema.nodes.footnote) != null
-  },
-  run(state, dispatch) {
-    let {empty, $from, $to} = state.selection, content = Fragment.empty
-    if (!empty && $from.sameParent($to) && $from.parent.inlineContent)
-      content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
-    dispatch(state.tr.replaceSelectionWith(footnoteSchema.nodes.footnote.create(null, content)))
-  }
-}))
-*/
-class FootnoteView {
+class LinkView {
   constructor(node, view, getPos) {
     this.node = node
     this.outerView = view
     this.getPos = getPos
 
-    this.dom = document.createElement("footnote")
+    this.dom = document.createElement("a")
+    this.dom.setAttribute('type', 'link')
+    this.dom.setAttribute('title', 'link title')
     this.open = false
     this.innerView = null
     this.tooltip = null
@@ -71,22 +62,12 @@ class FootnoteView {
 
   selectNode() {
     if (!this.open) {
+      console.log('render selected node')
       this.open = true
       this.dom.classList.add("ProseMirror-selectednode")
       this.tooltip = this.dom.appendChild(document.createElement("div"))
       this.tooltip.className = "footnote-tooltip"
-      this.innerView = new EditorView(this.tooltip, {
-        state: EditorState.create({doc: this.node}),
-        dispatchTransaction: this.dispatchInner.bind(this),
-        handleDOMEvents: {
-          mousedown: () => {
-            // Necessary to prevent strangeness due to the fact that
-            // the whole footnote is node-selected (and thus
-            // DOM-selected) when the parent editor is focused.
-            if (this.outerView.hasFocus()) this.innerView.focus()
-          }
-        }
-      })
+      
     }
   }
 
@@ -126,7 +107,7 @@ class FootnoteView {
     if (this.open) {
       this.open = false
       this.dom.classList.remove("ProseMirror-selectednode")
-      this.innerView.destroy()
+      //this.innerView.destroy()
       this.dom.removeChild(this.tooltip)
       this.tooltip = this.innerView = null
     }
@@ -154,6 +135,6 @@ window.view = new EditorView(document.querySelector("#editor"), {
 })
 */
 
-exports.initRunFootnote = initRun;
-exports.footnote = footnote;
-exports.FootnoteView = FootnoteView;
+exports.initRunLink = initRun;
+exports.link = link;
+exports.LinkView = LinkView;
