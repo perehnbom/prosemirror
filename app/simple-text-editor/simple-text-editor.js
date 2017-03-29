@@ -1,26 +1,47 @@
 var can = require('can'),
 $ = window.$ = require('jquery');
 
-var EditorState = require("prosemirror-state").EditorState
-var DOMParser = require("prosemirror-model").DOMParser
+var prosemirror = {
+  model : require("prosemirror-model"),
+  state : require("prosemirror-state"),
+  commands : require("prosemirror-commands"),
+  inputrules : require("prosemirror-inputrules"),
+  keymap : require("prosemirror-keymap"),
+  history : require("prosemirror-history"),
+  view : require("prosemirror-view"),
+  markdown : require("prosemirror-markdown"),
+  transform : require("prosemirror-transform")
+}
 
-var ProseMirrorCommands = require("prosemirror-commands");
+
+var Schema = prosemirror.model.Schema,
+  EditorState = prosemirror.state.EditorState,
+  Plugin = prosemirror.state.Plugin,
+  DOMParser = prosemirror.model.DOMParser,
+  Slice = prosemirror.model.Slice,
+  Fragment = prosemirror.model.Fragment,
+  toggleMark = prosemirror.commands.toggleMark,
+  keymap = prosemirror.keymap.keymap,
+  history = prosemirror.history.history,
+  baseKeymap = prosemirror.commands.baseKeymap,
+  EditorView = prosemirror.view.EditorView,
+  toggleMark = prosemirror.commands.toggleMark,
+  insertPoint = prosemirror.transform.insertPoint,
+  buildKeymap = require('./buildkeymap');
+
+var schema;
+
+class TestView{
+  constructor(){
+    
+  }
+  
+  testRun() {
+    return "HELLO"
+  }
+}
 
 
-var ProseMirrorInputRules = require("prosemirror-inputrules");
-
-var ProseMirrorKeymap = require("prosemirror-keymap");
-var keymap = ProseMirrorKeymap.keymap;
-var buildKeymap = require('./buildkeymap');
-
-var baseKeymap = require("prosemirror-commands").baseKeymap;
-
-var history = require("prosemirror-history").history;
-var EditorView = require("prosemirror-view").EditorView;
-
-var ProseMirrorSchemaList = require("prosemirror-schema-list")
-
-var ProseMirrorMarkdown = require("prosemirror-markdown");
 
 can.Component.extend({
   tag: "simple-text-editor",
@@ -30,38 +51,9 @@ can.Component.extend({
     commands : {
 
     },
-    markMenu : function(state){
-      
-      var selection = state.selection;
-
-      var $from = state.selection.$from;
-      var blockType = $from.parent.type.name;
-      
-      
-      var nodeJson = $from.parent.toJSON();
-      console.log(nodeJson)
-      
-      this.commands.each(function(command){
-        if(command.paragraph){
-          command.attr('active', blockType === 'paragraph');
-        }else if(command.heading){
-          var active = false;
-          if(blockType === 'heading'){
-            
-            
-            var type = $from.parent.type;
-            active = nodeJson.attrs.level == command.heading;
-          }
-          command.attr('active', active);
-          
-        }else if(command.mark){
-          var active = markActive(state, command.mark);
-          command.attr('active', !!active);
-        }
-        
-      })
-    }
+    markMenu : markMenu
   },
+
   events: {
     inserted: function(){
         console.log('inserted')
@@ -85,16 +77,54 @@ can.Component.extend({
     '#save click' : function(el,ev){
       ev.preventDefault();
       var editor = this.viewModel.editor;
-      var content = ProseMirrorMarkdown.defaultMarkdownSerializer.serialize(editor.state.doc);
+      var content = prosemirror.markdown.defaultMarkdownSerializer.serialize(editor.state.doc);
       console.log(content);
     },
+
+    '.insert-link click' : function(el,ev){
+      ev.preventDefault();
+      var editor = this.viewModel.editor;
+      var state = editor.state;
+
+      //var transaction = state.tr.insertText("testTEXT")
+      //editor.dispatch(transaction);
+
+      insertTestLink();
+      //insertSeachTarget();
+
+
+
+      function insertTestLink(){
+        // see example setup to insert link
+        var linkType = schema.nodes.itemlink;
+        var node = linkType.create({
+          href : 'http://www.google.com',
+          text : 'google link'
+        });
+        //var node = ProseMirrorMarkdown.schema.nodes.paragraph;
+        var transaction = state.tr.replaceSelectionWith(node, true);
+        editor.dispatch(transaction)
+      }
+
+      function insertSeachTarget(){
+        // Create searchtarget using decoration, see prosemirror-droptarget example
+        var newNodeType = schema.nodes.search;
+        var newNode = newNodeType.create({level : 1});
+        //var node = ProseMirrorMarkdown.schema.nodes.paragraph;
+        var transaction2 = state.tr.replaceSelectionWith(newNode, true);
+        editor.dispatch(transaction2)
+      }
+
+      //insertPoint(state.doc, state.selection.from, newNode)
+    },
+
     '#toggle-view click' : function(el,ev){
       ev.preventDefault();
       var showMarkdown = true;
       var vm = this.viewModel;
       if(!vm.markdownMode){
 
-        var content = ProseMirrorMarkdown.defaultMarkdownSerializer.serialize(vm.editor.state.doc);
+        var content = prosemirror.markdown.defaultMarkdownSerializer.serialize(vm.editor.state.doc);
 
         this.element.find(".content").html("");
         var te = this.element.find(".content")[0].appendChild(document.createElement("textarea"))
@@ -116,7 +146,36 @@ can.Component.extend({
 });
 
 function initProsemirror(element, viewModel, markdown){
-  var schema = ProseMirrorMarkdown.schema;
+
+
+  var markdownSchema = prosemirror.markdown.schema;
+
+
+  var searchNode = {
+    content: "inline<_>*",
+    group: "block",
+    parseDOM: [{ tag: 'search' }],
+    toDOM : function(){
+      return ['search']
+    }
+  };
+  var linkNode = {
+    content: "inline<_>*",
+    group: "block",
+    parseDOM: [{ tag: 'itemlink' }],
+    toDOM : function(){
+      return ['itemlink']
+    }
+  };
+  var newSchema = new Schema({
+    nodes: markdownSchema.spec.nodes.addToEnd('search', searchNode).addToEnd('itemlink', linkNode),
+    marks: markdownSchema.spec.marks
+  })
+
+  schema = newSchema;
+
+
+
   var initialState = EditorState.create({
     doc: initDoc(markdown),
     plugins: initPlugins(schema)
@@ -135,39 +194,33 @@ function initProsemirror(element, viewModel, markdown){
   })
 
   viewModel.commands.attr('strong', {
-    run : ProseMirrorCommands.toggleMark(schema.marks.strong),
+    run : toggleMark(schema.marks.strong),
     mark : schema.marks.strong
   })
   viewModel.commands.attr('em', {
-    run : ProseMirrorCommands.toggleMark(schema.marks.em),
+    run : toggleMark(schema.marks.em),
     mark : schema.marks.em
   })
-  viewModel.commands.attr('bullet_list', {
-    run : ProseMirrorSchemaList.wrapInList(schema.nodes.bullet_list)
-  })
-  viewModel.commands.attr('ordered_list', {
-    run : ProseMirrorSchemaList.wrapInList(schema.nodes.ordered_list)
-  })
-  
+
 
   viewModel.commands.attr('paragraph', {
-    run : ProseMirrorCommands.setBlockType(schema.nodes.paragraph),
+    run : prosemirror.commands.setBlockType(schema.nodes.paragraph),
     paragraph : true
   })
   viewModel.commands.attr('h1', {
-    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
       level : 1
     }),
     heading : 1
   })
   viewModel.commands.attr('h2', {
-    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
       level : 2
     }),
     heading : 2
   })
   viewModel.commands.attr('h3', {
-    run : ProseMirrorCommands.setBlockType(schema.nodes.heading, {
+    run : prosemirror.commands.setBlockType(schema.nodes.heading, {
       level : 3
     }),
     heading : 3
@@ -187,11 +240,25 @@ function markActive(state, type) {
 }
 
 function initPlugins(schema){
+  var linkPlugin = new Plugin({
+    props: {
+      transformPasted: function(slice){
+        console.log('transformPasted')
+
+        return new Slice(linkify(slice.content), slice.openLeft, slice.openRight)
+
+        return slice;
+      }
+    }
+  })
+
+
   var plugins = [
-    ProseMirrorInputRules.inputRules({rules: ProseMirrorInputRules.allInputRules.concat(buildInputRules(schema))}),
+    prosemirror.inputrules.inputRules({rules: prosemirror.inputrules.allInputRules.concat(buildInputRules(schema))}),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
-    history()
+    history(),
+    linkPlugin
   ]
   return plugins;
 
@@ -199,17 +266,94 @@ function initPlugins(schema){
 
 function initDoc(markdown){
   markdown = markdown || "";
-  var doc = ProseMirrorMarkdown.defaultMarkdownParser.parse(markdown);
+
+  var parser = new prosemirror.markdown.MarkdownParser(schema,
+                                  prosemirror.markdown.defaultMarkdownParser.tokenizer,
+                                  prosemirror.markdown.defaultMarkdownParser.tokens)
+
+
+  //var doc = ProseMirrorMarkdown.defaultMarkdownParser.parse(markdown);
+  var doc = parser.parse(markdown);
   return doc;
 }
 
 
+//const HTTP_LINK_REGEX = /\bhttps?:\/\/[\w_\/\.]+/g
+var HTTP_LINK_REGEX = /((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g
+var linkify = function(fragment){
+  var linkified = []
+  fragment.forEach(function(child){
+    if (child.isText) {
+      var text = child.text
+      var pos = 0, match
+
+      while (match = HTTP_LINK_REGEX.exec(text)) {
+        var start = match.index
+        var end = start + match[0].length
+        var link = child.type.schema.marks['link']
+
+        // simply copy across the text from before the match
+        if (start > 0) {
+          linkified.push(child.cut(pos, start))
+        }
+
+        var urlText = text.slice(start, end)
+        linkified.push(
+          child.cut(start, end).mark(link.create({href: urlText}).addToSet(child.marks))
+        )
+        pos = end
+      }
+
+      // copy over whatever is left
+      if (pos < text.length) {
+        linkified.push(child.cut(pos))
+      }
+    } else {
+      linkified.push(child.copy(linkify(child.content)))
+    }
+  })
+
+  return Fragment.fromArray(linkified)
+}
+
+function markMenu(state){
+  var selection = state.selection;
+
+  var $from = state.selection.$from;
+  var blockType = $from.parent.type.name;
+
+
+  var nodeJson = $from.parent.toJSON();
+
+
+  this.commands.each(function(command){
+    if(command.paragraph){
+      command.attr('active', blockType === 'paragraph');
+    }else if(command.heading){
+      var active = false;
+      if(blockType === 'heading'){
+
+
+        var type = $from.parent.type;
+        active = nodeJson.attrs.level == command.heading;
+      }
+      command.attr('active', active);
+
+    }else if(command.mark){
+      var active = markActive(state, command.mark);
+      command.attr('active', !!active);
+    }
+
+  })
+
+}
+
 function buildInputRules(schema) {
   var result = [], type
-  if (type = schema.nodes.blockquote) { result.push(ProseMirrorInputRules.blockQuoteRule(type)) }
-  if (type = schema.nodes.ordered_list) { result.push(ProseMirrorInputRules.orderedListRule(type)) }
-  if (type = schema.nodes.bullet_list) { result.push(ProseMirrorInputRules.bulletListRule(type)) }
-  if (type = schema.nodes.code_block) { result.push(ProseMirrorInputRules.codeBlockRule(type)) }
-  if (type = schema.nodes.heading) { result.push(ProseMirrorInputRules.headingRule(type, 6)) }
+  if (type = schema.nodes.blockquote) { result.push(prosemirror.inputrules.blockQuoteRule(type)) }
+  if (type = schema.nodes.ordered_list) { result.push(prosemirror.inputrules.orderedListRule(type)) }
+  if (type = schema.nodes.bullet_list) { result.push(prosemirror.inputrules.bulletListRule(type)) }
+  if (type = schema.nodes.code_block) { result.push(prosemirror.inputrules.codeBlockRule(type)) }
+  if (type = schema.nodes.heading) { result.push(prosemirror.inputrules.headingRule(type, 6)) }
   return result
 }
