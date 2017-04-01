@@ -51,8 +51,8 @@ class ReferenceView {
     var dom = this.dom = document.createElement("reference");
     this.dom.setAttribute('ref', node.attrs.ref)
     setTimeout(function(){
-      dom.setAttribute('title', 'test')
-    }, 1000)
+      dom.setAttribute('title', 'reference ' + node.attrs.ref)
+    }, 0)
     this.open = false
     this.innerView = null
     this.tooltip = null

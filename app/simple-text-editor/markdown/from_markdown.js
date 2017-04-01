@@ -79,8 +79,6 @@ class MarkdownParseState {
   }
 
   addText(text) {
-    console.log('search for instances of references')
-    console.log(text);
     this.addPureText(text);
   }
 
