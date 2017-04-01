@@ -54,7 +54,7 @@ can.Component.extend({
       ev.preventDefault();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch, "ref3434");
+      command.run(editor.state, editor.dispatch, "3434");
     },
 
 

@@ -29,7 +29,55 @@ class MarkdownParseState {
   // using the current marks as styling.
 
   addTextWithReferences(text) {
-    this.addText(text)
+    var self = this;
+    var chunks = searchForReferences(text);
+    chunks.forEach(function(chunk){
+      if(typeof chunk === 'string'){
+        self.addText(chunk);
+      }else{
+        self.addNode(self.schema.nodes.reference, {ref : chunk.ref});
+      }
+    })
+    
+    
+    
+    
+    function searchForReferences(text){
+      var REFERENCE_REGEX = /@[\d]+/g
+      
+      
+      
+      var result = [],
+        match,
+        index = 0;
+      while(match = REFERENCE_REGEX.exec(text)){
+        
+        function extract(endIndex){
+          var result = text.slice(0, endIndex);
+          text = text.substring(endIndex);
+          return result;
+        }
+        
+        var start = match.index
+        var end = start + match[0].length;
+        
+        if(start > 0){
+          result.push(extract(start));
+        }
+        result.push({
+          ref : extract(match[0].length).substring(1)
+        })
+        if(index++ > 1000){
+          console.error('safe break')
+          break;
+        }
+      }
+      if(text.length){
+        result.push(text);
+      }
+      console.log(result);
+      return result;
+    }
   }
 
   addText(text) {
