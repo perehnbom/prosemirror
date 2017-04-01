@@ -98,7 +98,28 @@ const defaultMarkdownSerializer = new MarkdownSerializer({
     state.text(node.text)
   },
   reference(state, node, parent, index) {
-    state.write(' @' + node.attrs.ref + ' ');
+    console.log('write reference')
+    var allSiblings = parent.content.content;
+    if(index > 0){
+      var prevSibling = allSiblings[index - 1];
+      if(endsWithNonSpace(prevSibling)){
+        state.write(' ');
+      }  
+    }
+    
+    state.write('@' + node.attrs.ref);
+    
+    var nextSibling = allSiblings[index + 1];
+    if(beginsWithNonSpace(node)){
+      state.write(' ')
+    }
+    
+    function endsWithNonSpace(node){
+      return node && node.text && node.text.substring(node.text.length - 1) != ' ';
+    }
+    function beginsWithNonSpace(node){
+      return node && node.text && node.text.substring(0, 1) != ' ';
+    }
   }
 }, {
   em: {open: "*", close: "*", mixable: true},

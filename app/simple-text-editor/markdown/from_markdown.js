@@ -43,9 +43,7 @@ class MarkdownParseState {
     
     
     function searchForReferences(text){
-      var REFERENCE_REGEX = /@[\d]+/g
-      
-      
+      var REFERENCE_REGEX = /@[\d]+/
       
       var result = [],
         match,
