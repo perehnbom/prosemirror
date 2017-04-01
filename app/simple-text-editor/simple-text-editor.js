@@ -50,11 +50,16 @@ can.Component.extend({
 
       console.log(prosemirrorHandler.toMarkdown(this.viewModel.editor));
     },
-    '.insert-reference click' : function(el,ev){
+    '.insert-reference mousedown' : function(el,ev){
       ev.preventDefault();
+      //ev.stopPropagation();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
       command.run(editor.state, editor.dispatch, "3434");
+    },
+    '.insert-reference click' : function(el,ev){
+      ev.preventDefault();
+      console.log('insert-reference click')
     },
 
 

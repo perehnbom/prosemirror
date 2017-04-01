@@ -51,6 +51,7 @@ class ReferenceView {
     var dom = this.dom = document.createElement("reference");
     this.dom.setAttribute('ref', node.attrs.ref)
     setTimeout(function(){
+      console.log('fetch reference')
       dom.setAttribute('title', 'reference ' + node.attrs.ref)
     }, 0)
     this.open = false

@@ -4,6 +4,7 @@ _ = window._ = require('lodash');
 require('./can-import');
 
 require('./simple-text-editor/simple-text-editor');
+//require('./editor/editor');
 var appTemplate = can.stache(require('raw-loader!./app.html'))
 
 
