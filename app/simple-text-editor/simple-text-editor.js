@@ -7,7 +7,7 @@ var prosemirror = {
   view : require("prosemirror-view"),
 }
 const {FootnoteView} = require("./footnote")
-const {LinkView} = require("./link")
+const {ReferenceView} = require("./reference")
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
 const menu = require('./menu');
@@ -27,7 +27,7 @@ can.Component.extend({
     inserted: function(){
         console.log('inserted')
         initProsemirror(this.element, this.viewModel, "test text");
-        
+
     },
     'removed' : function(){
       this.viewModel.editor.destroy();
@@ -36,7 +36,7 @@ can.Component.extend({
       ev.preventDefault();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
-      
+
       command.run(editor.state, editor.dispatch);
     },
     '.set-heading click' : function(el,ev){
@@ -47,14 +47,14 @@ can.Component.extend({
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
-  
+
       console.log(prosemirrorHandler.toMarkdown(this.viewModel.editor));
     },
-    '.insert-footnote click' : function(el,ev){
+    '.insert-reference click' : function(el,ev){
       ev.preventDefault();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch);
+      command.run(editor.state, editor.dispatch, "ref3434");
     },
 
 
@@ -97,11 +97,11 @@ function initProsemirror(element, viewModel, markdown){
       menu.markMenu(newState, viewModel);
     },
     nodeViews: {
-      footnote(node, view, getPos) { 
-        return new FootnoteView(node, view, getPos) 
+      footnote(node, view, getPos) {
+        return new FootnoteView(node, view, getPos)
       },
-      link(node, view, getPos) {
-        return new LinkView(node, view, getPos)
+      reference(node, view, getPos) {
+        return new ReferenceView(node, view, getPos)
       }
     }
   })
