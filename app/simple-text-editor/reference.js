@@ -71,7 +71,10 @@ class ReferenceSearchView {
   constructor(node, view, getPos){
     this.node = node;
     var dom = this.dom = document.createElement("reference-search");
-    dom.appendChild(document.createElement("search-box"))
+    var searchBox = document.createElement("search-box");
+
+    dom.appendChild(searchBox)
+    document.querySelector('#outer-search').focus();
   }
   
 
