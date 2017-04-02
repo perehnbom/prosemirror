@@ -10,7 +10,7 @@ const {buildInputRules} = require('./input-rules')
 const buildKeymap = require('./buildkeymap');
 
 const {footnote} = require("./footnote")
-const {reference} = require("./reference")
+
 
 defaultMarkdownSerializer.nodes.footnote = function(state, node){
   state.write("[" + "footnote" + "](#itemid)");

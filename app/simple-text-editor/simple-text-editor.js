@@ -7,7 +7,7 @@ var prosemirror = {
   view : require("prosemirror-view"),
 }
 const {FootnoteView} = require("./footnote")
-const {ReferenceView} = require("./reference")
+const {ReferenceView, ReferenceSearchView, runReference} = require("./reference")
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
 const menu = require('./menu');
@@ -53,13 +53,21 @@ can.Component.extend({
     '.insert-reference mousedown' : function(el,ev){
       ev.preventDefault();
       //ev.stopPropagation();
-      var command = this.viewModel.commands.attr(el.attr('command'));
+      var command = this.viewModel.commands.attr('referenceSearch');
       var editor = this.viewModel.editor;
       command.run(editor.state, editor.dispatch, "2334");
     },
     '.insert-reference click' : function(el,ev){
       ev.preventDefault();
       console.log('insert-reference click')
+    },
+    'search-box click' : function(el,ev){
+      ev.stopPropagation();
+      ev.preventDefault();
+      
+      var command = this.viewModel.commands.attr('reference');
+      var editor = this.viewModel.editor;
+      command.run(editor.state, editor.dispatch, "2334");
     },
 
     '#toggle-view click' : function(el,ev){
@@ -106,6 +114,9 @@ function initProsemirror(element, viewModel, markdown){
       },
       reference(node, view, getPos) {
         return new ReferenceView(node, view, getPos)
+      },
+      referenceSearch(node, view, getPos) {
+        return new ReferenceSearchView(node, view, getPos)
       }
     }
   })

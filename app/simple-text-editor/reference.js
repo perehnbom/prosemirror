@@ -25,7 +25,32 @@ const reference = {
   toDOM(node) { return ["reference", node.attrs] }
 }
 
+const referenceSearch = {
+  inline: true,
+  attrs: {
+    
+  },
+  group: "inline",
+  draggable: false,
+  atom: true,
+  parseDOM: [{tag: "reference-search", getAttrs(dom) {
+    return {
+      
+    }
+  }}],
+  toDOM(node) { return ["reference-search", node.attrs] }
+}
 
+
+function initRunSearchReference(schema){
+  return function(state, dispatch, reference) {
+
+
+
+    console.log('create reference')
+    dispatch(state.tr.replaceSelectionWith(schema.nodes.referenceSearch.create({})))
+  }
+}
 
 function initRun(schema){
   return function(state, dispatch, reference) {
@@ -39,6 +64,19 @@ function initRun(schema){
 
     console.log('create reference')
     dispatch(state.tr.replaceSelectionWith(schema.nodes.reference.create({ref: reference}, content)))
+  }
+}
+
+class ReferenceSearchView {
+  constructor(node, view, getPos){
+    this.node = node;
+    var dom = this.dom = document.createElement("reference-search");
+    dom.appendChild(document.createElement("search-box"))
+  }
+  
+
+  stopEvent(event) {
+    return this.innerView && this.innerView.dom.contains(event.target)
   }
 }
 
@@ -134,5 +172,9 @@ window.view = new EditorView(document.querySelector("#editor"), {
 */
 
 exports.initRunReference = initRun;
+exports.initRunSearchReference = initRunSearchReference;
 exports.reference = reference;
 exports.ReferenceView = ReferenceView;
+
+exports.referenceSearch = referenceSearch;
+exports.ReferenceSearchView = ReferenceSearchView;

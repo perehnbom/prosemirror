@@ -122,6 +122,21 @@ exports.schema = new Schema({
       }}],
       toDOM(node) { return ["reference", node.attrs] }
     },
+    
+    referenceSearch: {
+      inline: true,
+      attrs: {
+        
+      },
+      group: "inline",
+      draggable: false,
+      parseDOM: [{tag: "reference-search", getAttrs(dom) {
+        return {
+          
+        }
+      }}],
+      toDOM(node) { return ["reference-search", node.attrs] }
+    },
 
     hard_break: {
       inline: true,

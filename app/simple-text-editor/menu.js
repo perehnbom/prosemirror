@@ -1,6 +1,6 @@
 const {toggleMark, setBlockType} = require("prosemirror-commands")
 const {initRunFootnote} = require("./footnote")
-const {initRunReference} = require("./reference")
+const {initRunSearchReference, initRunReference} = require("./reference")
 exports.initCommands = function(commands, schema){
   commands.attr('strong', {
     run : toggleMark(schema.marks.strong),
@@ -37,6 +37,9 @@ exports.initCommands = function(commands, schema){
   commands.attr('footnote', {
     run : initRunFootnote(schema)
   }),
+  commands.attr('referenceSearch', {
+    run : initRunSearchReference(schema)
+  })
   commands.attr('reference', {
     run : initRunReference(schema)
   })
