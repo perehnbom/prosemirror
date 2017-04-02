@@ -55,13 +55,12 @@ can.Component.extend({
       //ev.stopPropagation();
       var command = this.viewModel.commands.attr(el.attr('command'));
       var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch, "3434");
+      command.run(editor.state, editor.dispatch, "2334");
     },
     '.insert-reference click' : function(el,ev){
       ev.preventDefault();
       console.log('insert-reference click')
     },
-
 
     '#toggle-view click' : function(el,ev){
       ev.preventDefault();
