@@ -101,8 +101,8 @@ function initProsemirror(element, viewModel, markdown){
       editor.updateState(newState)
 
       var commandState = getCommandState(schema, editor);
-
-      menu.markMenu(newState, viewModel);
+      viewModel.commands.attr(commandState);
+      //menu.markMenu(newState, viewModel);
     },
     nodeViews: {
       footnote(node, view, getPos) {
@@ -116,5 +116,7 @@ function initProsemirror(element, viewModel, markdown){
       }
     }
   })
-  menu.initCommands(viewModel.commands, schema);
+  var commands = getCommandState(schema, editor);
+  viewModel.commands.attr(commands);
+  //menu.initCommands(viewModel.commands, schema);
 }

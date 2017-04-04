@@ -35,22 +35,34 @@ function runCommand(schema, editor, command, option){
 }
 
 
+function getCommands(){
+  return {
+    paragraph : {active:false},
+    h1 : {active:false},
+    h2 : {active:false},
+    h3 : {active:false},
+    em : {active:false},
+    strong : {active:false},
+    reference : {active:false}
+  }
+}
+  
+
 function getCommandState(schema, editor){
   var state = editor.state,
     selection = state.selection,
     $from = selection.$from,
     blockType = $from.parent.type.name,
     nodeJson = $from.parent.toJSON(),
-    result = {
-    };
+    result = getCommands();
 
   if(blockType === 'paragraph'){
-    result.heading = 'paragraph'
+    result.paragraph.active = true;
   }else{
-    result.heading = '' + nodeJson.attrs.level;
+    result["h" + nodeJson.attrs.level].active = true ;
   }
-  result.em = markActive(state, schema.marks.em)
-  result.strong = markActive(state, schema.marks.strong)
+  result.em.active = markActive(state, schema.marks.em)
+  result.strong.active = markActive(state, schema.marks.strong)
   console.log(result)
   return result;
 }
