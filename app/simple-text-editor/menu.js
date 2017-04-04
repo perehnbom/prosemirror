@@ -3,46 +3,38 @@ const {initRunFootnote} = require("./footnote")
 const {initRunSearchReference, initRunReference} = require("./reference")
 exports.initCommands = function(commands, schema){
   commands.attr('strong', {
-    run : toggleMark(schema.marks.strong),
+
     mark : schema.marks.strong
   })
   commands.attr('em', {
-    run : toggleMark(schema.marks.em),
+
     mark : schema.marks.em
   })
 
 
   commands.attr('paragraph', {
-    run : setBlockType(schema.nodes.paragraph),
+
     paragraph : true
   })
   commands.attr('h1', {
-    run : setBlockType(schema.nodes.heading, {
-      level : 1
-    }),
+
     heading : 1
   })
   commands.attr('h2', {
-    run : setBlockType(schema.nodes.heading, {
-      level : 2
-    }),
+
     heading : 2
   })
   commands.attr('h3', {
-    run : setBlockType(schema.nodes.heading, {
-      level : 3
-    }),
+
     heading : 3
   }),
   commands.attr('footnote', {
     run : initRunFootnote(schema)
   }),
   commands.attr('referenceSearch', {
-    run : initRunSearchReference(schema)
+
   })
-  commands.attr('reference', {
-    run : initRunReference(schema)
-  })
+
 }
 
 
@@ -54,7 +46,8 @@ exports.markMenu = function(state, vm){
 
   var nodeJson = $from.parent.toJSON();
 
-  vm.commands.each(function(command){
+  vm.commands.each(function(command, commandName){
+    
     if(command.paragraph){
       command.attr('active', blockType === 'paragraph');
     }else if(command.heading){

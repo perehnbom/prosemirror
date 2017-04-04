@@ -28,44 +28,19 @@ const reference = {
 const referenceSearch = {
   inline: true,
   attrs: {
-    
+
   },
   group: "inline",
   draggable: false,
   atom: true,
   parseDOM: [{tag: "reference-search", getAttrs(dom) {
     return {
-      
+
     }
   }}],
   toDOM(node) { return ["reference-search", node.attrs] }
 }
 
-
-function initRunSearchReference(schema){
-  return function(state, dispatch, reference) {
-
-
-
-    console.log('create reference')
-    dispatch(state.tr.replaceSelectionWith(schema.nodes.referenceSearch.create({})))
-  }
-}
-
-function initRun(schema){
-  return function(state, dispatch, reference) {
-
-    let {empty, $from, $to} = state.selection,
-      content = Fragment.empty
-    if (!empty && $from.sameParent($to) && $from.parent.inlineContent){
-      content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
-    }
-
-
-    console.log('create reference')
-    dispatch(state.tr.replaceSelectionWith(schema.nodes.reference.create({ref: reference}, content)))
-  }
-}
 
 class ReferenceSearchView {
   constructor(node, view, getPos){
@@ -76,7 +51,7 @@ class ReferenceSearchView {
     dom.appendChild(searchBox)
     document.querySelector('#outer-search').focus();
   }
-  
+
 
   stopEvent(event) {
     return this.innerView && this.innerView.dom.contains(event.target)
@@ -174,8 +149,6 @@ window.view = new EditorView(document.querySelector("#editor"), {
 })
 */
 
-exports.initRunReference = initRun;
-exports.initRunSearchReference = initRunSearchReference;
 exports.reference = reference;
 exports.ReferenceView = ReferenceView;
 

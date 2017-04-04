@@ -97,6 +97,9 @@ const defaultMarkdownSerializer = new MarkdownSerializer({
   text(state, node) {
     state.text(node.text)
   },
+  referenceSearch(){
+    
+  },
   reference(state, node, parent, index) {
     console.log('write reference')
     var allSiblings = parent.content.content;

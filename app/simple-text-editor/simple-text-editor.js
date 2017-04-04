@@ -11,7 +11,9 @@ const {ReferenceView, ReferenceSearchView, runReference} = require("./reference"
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
 const menu = require('./menu');
+const {runCommand, getCommandState} = require('./commands');
 
+var schema = prosemirrorHandler.initSchema();
 
 can.Component.extend({
   tag: "simple-text-editor",
@@ -34,16 +36,12 @@ can.Component.extend({
     },
     '.toggle-mark click' : function(el,ev){
       ev.preventDefault();
-      var command = this.viewModel.commands.attr(el.attr('command'));
-      var editor = this.viewModel.editor;
-
-      command.run(editor.state, editor.dispatch);
+      runCommand(schema, this.viewModel.editor, el.attr('command'));
     },
     '.set-heading click' : function(el,ev){
       ev.preventDefault();
-      var command = this.viewModel.commands.attr(el.attr('command'));
-      var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch);
+      runCommand(schema, this.viewModel.editor, 'heading', el.attr('heading'));
+
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
@@ -52,10 +50,8 @@ can.Component.extend({
     },
     '.insert-reference mousedown' : function(el,ev){
       ev.preventDefault();
-      //ev.stopPropagation();
-      var command = this.viewModel.commands.attr('referenceSearch');
-      var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch, "2334");
+
+      runCommand(schema, this.viewModel.editor, 'referenceSearch')
     },
     '.insert-reference click' : function(el,ev){
       ev.preventDefault();
@@ -64,10 +60,7 @@ can.Component.extend({
     'search-box click' : function(el,ev){
       ev.stopPropagation();
       ev.preventDefault();
-      
-      var command = this.viewModel.commands.attr('reference');
-      var editor = this.viewModel.editor;
-      command.run(editor.state, editor.dispatch, "2334");
+      runCommand(schema, this.viewModel.editor, 'reference', "2334")
     },
 
     '#toggle-view click' : function(el,ev){
@@ -99,13 +92,16 @@ can.Component.extend({
 
 function initProsemirror(element, viewModel, markdown){
 
-  var schema = prosemirrorHandler.initSchema();
+
 
   var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
     state : prosemirrorHandler.initialState(schema, markdown),
     dispatchTransaction : function(tr){
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
+
+      var commandState = getCommandState(schema, editor);
+
       menu.markMenu(newState, viewModel);
     },
     nodeViews: {
