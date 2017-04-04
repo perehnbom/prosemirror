@@ -63,7 +63,6 @@ function getCommandState(schema, editor){
   }
   result.em.active = markActive(state, schema.marks.em)
   result.strong.active = markActive(state, schema.marks.strong)
-  console.log(result)
   return result;
 }
 

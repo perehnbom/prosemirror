@@ -6,11 +6,11 @@ var prosemirror = {
   state : require("prosemirror-state"),
   view : require("prosemirror-view"),
 }
-const {FootnoteView} = require("./footnote")
+
 const {ReferenceView, ReferenceSearchView, runReference} = require("./reference")
 const {EditorView} = require("prosemirror-view")
 const prosemirrorHandler = require('./prosemirror-handler');
-const menu = require('./menu');
+
 const {runCommand, getCommandState} = require('./commands');
 
 var schema = prosemirrorHandler.initSchema();
@@ -105,9 +105,6 @@ function initProsemirror(element, viewModel, markdown){
       //menu.markMenu(newState, viewModel);
     },
     nodeViews: {
-      footnote(node, view, getPos) {
-        return new FootnoteView(node, view, getPos)
-      },
       reference(node, view, getPos) {
         return new ReferenceView(node, view, getPos)
       },

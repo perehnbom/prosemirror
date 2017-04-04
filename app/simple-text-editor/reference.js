@@ -8,7 +8,7 @@ const {schema} = require("prosemirror-schema-basic")
 const {exampleSetup, buildMenuItems} = require("prosemirror-example-setup")
 
 
-
+/*
 const reference = {
   inline: true,
   attrs: {
@@ -41,6 +41,9 @@ const referenceSearch = {
   toDOM(node) { return ["reference-search", node.attrs] }
 }
 
+exports.reference = reference;
+exports.referenceSearch = referenceSearch;
+*/
 
 class ReferenceSearchView {
   constructor(node, view, getPos){
@@ -137,20 +140,10 @@ class ReferenceView {
 
   ignoreMutation() { return true }
 }
-/*
-window.view = new EditorView(document.querySelector("#editor"), {
-  state: EditorState.create({
-    doc: DOMParser.fromSchema(footnoteSchema).parse(document.querySelector("#content")),
-    plugins: exampleSetup({schema: footnoteSchema, menuContent: menu.fullMenu})
-  }),
-  nodeViews: {
-    footnote(node, view, getPos) { return new FootnoteView(node, view, getPos) }
-  }
-})
-*/
 
-exports.reference = reference;
+
+
 exports.ReferenceView = ReferenceView;
 
-exports.referenceSearch = referenceSearch;
+
 exports.ReferenceSearchView = ReferenceSearchView;
