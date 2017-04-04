@@ -53,13 +53,12 @@ function getCommandState(schema, editor){
     selection = state.selection,
     $from = selection.$from,
     blockType = $from.parent.type.name,
-    nodeJson = $from.parent.toJSON(),
     result = getCommands();
 
   if(blockType === 'paragraph'){
     result.paragraph.active = true;
   }else{
-    result["h" + nodeJson.attrs.level].active = true ;
+    result["h" + $from.parent.attrs.level].active = true ;
   }
   result.em.active = markActive(state, schema.marks.em)
   result.strong.active = markActive(state, schema.marks.strong)
