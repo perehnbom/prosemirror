@@ -71,6 +71,7 @@ class ReferenceView {
   }
 
   update(node) {
+    console.log('run update')
     if (!node.sameMarkup(this.node)) return false
     this.node = node
     if (this.innerView) {

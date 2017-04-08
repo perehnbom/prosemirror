@@ -3,10 +3,10 @@ const {Fragment} = require("prosemirror-model")
 const {undo, redo} = require("prosemirror-history")
 const {wrapInList} = require("prosemirror-schema-list")
 var runners = {
-  strong : schema => toggleMark(schema.marks.strong),
-  em : schema => toggleMark(schema.marks.em),
-  undo : schema => undo,
-  redo : schema => redo,
+  strong : (schema, editor) => toggleMark(schema.marks.strong)(editor.state, editor.dispatch),
+  em : (schema, editor) => toggleMark(schema.marks.em)(editor.state, editor.dispatch),
+  undo : (schema, editor) => undo(editor.state, editor.dispatch),
+  redo : (schema, editor) => redo(editor.state, editor.dispatch),
   heading : function(schema, level){
     if(level === 'paragraph'){
       return setBlockType(schema.nodes.paragraph);
@@ -16,51 +16,39 @@ var runners = {
       })
     }
   },
-  bullet_list : function(schema){
-
-    return wrapInList(schema.nodes.bullet_list)
-
+  
+  bullet_list : (schema, editor) => wrapInList(schema.nodes.bullet_list)(editor.state, editor.dispatch),
+  ordered_list : (schema, editor) => wrapInList(schema.nodes.ordered_list)(editor.state, editor.dispatch),
+  
+  referenceSearch : function(schema, editor){
+    return editor.dispatch(editor.state.tr.replaceSelectionWith(schema.nodes.referenceSearch.create({})))
   },
-  ordered_list : function(schema){
-
-    return wrapInList(schema.nodes.ordered_list)
-
+  reference : function(schema, editor, reference){
+  
+    editor.dispatch(editor.state.tr.replaceSelectionWith(schema.nodes.reference.create({ref: reference})))
+    //editor.focus()
   },
-  referenceSearch : function(schema){
-    return function(state, dispatch) {
-      dispatch(state.tr.replaceSelectionWith(schema.nodes.referenceSearch.create({})))
-    }
-  },
-  reference : function(schema, reference){
-    return function(state, dispatch, editor) {
-      let {empty, $from, $to} = state.selection,
+  link : function(schema, editor){
+    var markType = schema.marks.link,
+      state = editor.state,
+      dispatch = editor.dispatch;
+  
+    if (markActive(state, markType)) {
+      toggleMark(markType)(state, dispatch)
+    }else{
+      var attrs = {
+        href : 'http://www.google.com',
+        title : ''
+      }
+      
+      let {empty, from, to, $from, $to} = state.selection,
         content = Fragment.empty
+        
       if (!empty && $from.sameParent($to) && $from.parent.inlineContent){
         content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
       }
-      dispatch(state.tr.replaceSelectionWith(schema.nodes.reference.create({ref: reference}, content)))
-      editor.focus()
-    }
-  },
-  link : function(schema){
-    var markType = schema.marks.link;
-    return function(state, dispatch ,editor){
-      if (markActive(state, markType)) {
-        toggleMark(markType)(state, dispatch)
-      }else{
-        var attrs = {
-          href : 'http://www.google.com',
-          title : ''
-        }
-        let {empty, from, to, $from} = state.selection
-        console.log(from + ' ' + to)
-        toggleMark(markType, attrs)(state, dispatch)
-
-
-
-
-        editor.focus();
-      }
+      toggleMark(markType, attrs)(state, dispatch)
+      editor.focus();      
     }
   }
 }
@@ -77,8 +65,12 @@ function markActive(state, type) {
 
 
 function runCommand(schema, editor, command, option){
+  /*
   var run = runners[command](schema, option);
   return run(editor.state, editor.dispatch, editor);
+  */
+  var run = runners[command];
+  return run(schema, editor, option);
 }
 
 
