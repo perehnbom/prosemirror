@@ -27,6 +27,7 @@ exports.initSchema = function(){
 exports.initialState = function(schema, markdown){
   return EditorState.create({
     doc: initDoc(schema, markdown),
+    
     plugins: initPlugins(schema)
   });
 }

@@ -103,14 +103,40 @@ function initProsemirror(element, viewModel, markdown){
 
   var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
     state : prosemirrorHandler.initialState(schema, markdown),
-
+    
     dispatchTransaction : function(tr){
+      
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
 
       var commandState = getCommandState(schema, editor);
       viewModel.commands.attr(commandState);
       //menu.markMenu(newState, viewModel);
+    },
+    handleDOMEvents : {
+      mousedown : function(view, event){
+        
+        if(element.is('on-edit')){
+          return;
+        }
+        var el = event.srcElement;
+        if(el.href){
+          window.open(el.href,'_blank');
+          event.preventDefault();
+          return true;
+        }
+      }
+    },
+    editable : function(){
+      return true;
+    },
+    
+    onFocus : function(editor, event){
+      element.addClass('on-edit')
+    },
+    onBlur : function(editor, event){
+      console.log('onBlur')
+      element.removeClass('on-edit')
     },
     nodeViews: {
       reference(node, view, getPos) {
