@@ -7,44 +7,6 @@ const {EditorView} = require("prosemirror-view")
 const {schema} = require("prosemirror-schema-basic")
 const {exampleSetup, buildMenuItems} = require("prosemirror-example-setup")
 
-
-/*
-const reference = {
-  inline: true,
-  attrs: {
-    ref: {default: " "}
-  },
-  group: "inline",
-  draggable: true,
-  atom: true,
-  parseDOM: [{tag: "reference", getAttrs(dom) {
-    return {
-      ref: dom.getAttribute('ref')
-    }
-  }}],
-  toDOM(node) { return ["reference", node.attrs] }
-}
-
-const referenceSearch = {
-  inline: true,
-  attrs: {
-
-  },
-  group: "inline",
-  draggable: false,
-  atom: true,
-  parseDOM: [{tag: "reference-search", getAttrs(dom) {
-    return {
-
-    }
-  }}],
-  toDOM(node) { return ["reference-search", node.attrs] }
-}
-
-exports.reference = reference;
-exports.referenceSearch = referenceSearch;
-*/
-
 class ReferenceSearchView {
   constructor(node, view, getPos){
     this.node = node;
@@ -70,14 +32,18 @@ class ReferenceView {
     var dom = this.dom = document.createElement("reference");
     this.dom.setAttribute('ref', node.attrs.ref)
     //setTimeout(function(){
+
+    var title = 'reference ' + node.attrs.ref;
       dom.setAttribute('title', 'reference ' + node.attrs.ref)
     //}, 0)
-    this.open = false
-    this.innerView = null
-    this.tooltip = null
+    this.dom.appendChild(document.createTextNode(title))
+
   }
 
   selectNode() {
+    console.log(this.dom.offsetTop + ' ' + this.dom.offsetLeft)
+    this.outerView.customEventHandler('selectNode', this);
+    /*
     if (!this.open) {
       console.log('render selected node')
       this.open = true
@@ -86,6 +52,7 @@ class ReferenceView {
       this.tooltip.className = "footnote-tooltip"
 
     }
+    */
   }
 
   dispatchInner(tr) {
@@ -121,6 +88,8 @@ class ReferenceView {
   }
 
   deselectNode() {
+    this.outerView.customEventHandler('deselectNode', this);
+/*
     if (this.open) {
       this.open = false
       this.dom.classList.remove("ProseMirror-selectednode")
@@ -128,6 +97,7 @@ class ReferenceView {
       this.dom.removeChild(this.tooltip)
       this.tooltip = this.innerView = null
     }
+    */
   }
 
   destroy() {

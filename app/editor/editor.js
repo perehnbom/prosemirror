@@ -9,7 +9,7 @@ const {MenuItem} = require("prosemirror-menu")
 const {Schema, DOMParser, Fragment} = require("prosemirror-model")
 const {EditorView} = require("prosemirror-view")
 const {schema} = require("prosemirror-schema-basic")
-const {exampleSetup, buildMenuItems} = require("prosemirror-example-setup")
+const {exampleSetup, buildMenuItems} = require("./example-app/index")
 
 const footnote = {
   group: "inline",
@@ -157,17 +157,17 @@ can.Component.extend({
   tag: "editor",
   template: can.stache(require('raw-loader!./editor.html')),
   viewModel: {
-  
+
     commands : {
-      
+
     }
   },
-  
+
   events: {
     inserted: function(){
-    
+
       initProsemirror(this.element[0].querySelector(".content"), this.viewModel);
-      
+
     },
     'removed' : function(){
       this.viewModel.editor.destroy();

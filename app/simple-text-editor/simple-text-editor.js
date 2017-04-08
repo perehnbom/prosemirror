@@ -28,7 +28,8 @@ can.Component.extend({
   events: {
     inserted: function(){
         console.log('inserted')
-        initProsemirror(this.element, this.viewModel, "test text");
+
+        initProsemirror(this.element, this.viewModel, "HEJ");
 
     },
     'removed' : function(){
@@ -42,6 +43,12 @@ can.Component.extend({
       ev.preventDefault();
       runCommand(schema, this.viewModel.editor, 'heading', el.attr('heading'));
 
+    },
+    '.run-command mousedown' : function(el,ev){
+      runCommand(schema, this.viewModel.editor, el.attr('command'))
+    },
+    '.run-command click' : function(el,ev){
+      ev.preventDefault();
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
@@ -96,6 +103,7 @@ function initProsemirror(element, viewModel, markdown){
 
   var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
     state : prosemirrorHandler.initialState(schema, markdown),
+
     dispatchTransaction : function(tr){
       var newState = editor.state.apply(tr);
       editor.updateState(newState)
@@ -113,6 +121,9 @@ function initProsemirror(element, viewModel, markdown){
       }
     }
   })
+  editor.customEventHandler = function(event, node){
+    console.log('handle custom event ' + event + ' for ' +node )
+  }
   var commands = getCommandState(schema, editor);
   viewModel.commands.attr(commands);
   //menu.initCommands(viewModel.commands, schema);

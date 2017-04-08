@@ -106,33 +106,29 @@ exports.schema = new Schema({
     reference: {
       inline: true,
       attrs: {
-        type: {default : 'item'},
-        href: {default: null},
-        title: {default: null},
         ref: {default: null}
       },
+
       group: "inline",
-      draggable: true,
+    
       parseDOM: [{tag: "reference", getAttrs(dom) {
         return {
-          src: dom.getAttribute("src"),
-          title: dom.getAttribute("title"),
-          alt: dom.getAttribute("alt")
+          ref: dom.getAttribute("ref")
         }
       }}],
       toDOM(node) { return ["reference", node.attrs] }
     },
-    
+
     referenceSearch: {
       inline: true,
       attrs: {
-        
+
       },
       group: "inline",
       draggable: false,
       parseDOM: [{tag: "reference-search", getAttrs(dom) {
         return {
-          
+
         }
       }}],
       toDOM(node) { return ["reference-search", node.attrs] }
@@ -165,6 +161,7 @@ exports.schema = new Schema({
         href: {},
         title: {default: null}
       },
+      inclusive: false,
       parseDOM: [{tag: "a[href]", getAttrs(dom) {
         return {href: dom.getAttribute("href"), title: dom.getAttribute("title")}
       }}],
