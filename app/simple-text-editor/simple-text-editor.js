@@ -9,17 +9,26 @@ var prosemirror = {
 
 const {ReferenceView, ReferenceSearchView, runReference} = require("./reference")
 const {EditorView} = require("prosemirror-view")
-const prosemirrorHandler = require('./prosemirror-handler');
+const {editorHandler} = require('./prosemirror-handler');
 
-const {runCommand, getCommandState} = require('./commands');
 
-var schema = prosemirrorHandler.initSchema();
+
+
 
 can.Component.extend({
   tag: "simple-text-editor",
   template: can.stache(require('raw-loader!./simple-text-editor.html')),
   viewModel: {
     markdownMode : false,
+    haltClose : false,
+    setHaltClose : function(){
+      console.log('setHaltClose')
+      this.haltClose = true;
+    },
+    resetHaltClose : function(){
+      console.log('resetHaltClose')
+      this.haltClose = false;
+    },
     commands : {
 
     }
@@ -29,36 +38,39 @@ can.Component.extend({
     inserted: function(){
         console.log('inserted')
 
-        initProsemirror(this.element, this.viewModel, "HEJ");
-
+      this.editorHandler = editorHandler(this);
+    },
+    '.simple-text-editor-menu blur' : function(){
+      console.log('simple-text-editor-menu blur')
     },
     'removed' : function(){
-      this.viewModel.editor.destroy();
+      this.editorHandler.destroy();
     },
-    '.toggle-mark click' : function(el,ev){
-      ev.preventDefault();
-      runCommand(schema, this.viewModel.editor, el.attr('command'));
-    },
-    '.set-heading click' : function(el,ev){
-      ev.preventDefault();
-      runCommand(schema, this.viewModel.editor, 'heading', el.attr('heading'));
 
-    },
     '.run-command mousedown' : function(el,ev){
-      runCommand(schema, this.viewModel.editor, el.attr('command'))
+      var vm = this.viewModel;
+      this.editorHandler.handleMenuClick();
+      this.editorHandler.runCommand(el.attr('command'), el.attr('option'));
     },
-    '.run-command click' : function(el,ev){
+    '.simple-text-editor-menu a click' : function(el,ev){
+
       ev.preventDefault();
     },
     '#save click' : function(el,ev){
       ev.preventDefault();
 
-      console.log(prosemirrorHandler.toMarkdown(this.viewModel.editor));
+      console.log(this.editorHandler.toMarkdown());
     },
     '.insert-reference mousedown' : function(el,ev){
       ev.preventDefault();
+      this.editorHandler.runCommand('referenceSearch');
 
-      runCommand(schema, this.viewModel.editor, 'referenceSearch')
+    },
+    'textarea focus' : function(){
+      this.editorHandler.handleOnFocus()
+    },
+    'textarea blur' : function(){
+      this.editorHandler.handleOnBlur()
     },
     '.insert-reference click' : function(el,ev){
       ev.preventDefault();
@@ -67,90 +79,15 @@ can.Component.extend({
     'search-box click' : function(el,ev){
       ev.stopPropagation();
       ev.preventDefault();
-      runCommand(schema, this.viewModel.editor, 'reference', "2334")
+
+      this.editorHandler.runCommand('reference', '2334');
     },
 
     '#toggle-view click' : function(el,ev){
       ev.preventDefault();
-      var showMarkdown = true;
-      var vm = this.viewModel;
-      if(!vm.markdownMode){
 
-        var content = prosemirrorHandler.toMarkdown(this.viewModel.editor);
-
-        this.element.find(".content").html("");
-        var te = this.element.find(".content")[0].appendChild(document.createElement("textarea"))
-
-        te.value = content
-        vm.attr('markdownMode', true);
-        vm.editor.destroy();
-      }else{
-        console.log('switch from markdown')
-        vm.attr('markdownMode', false);
-        var markdown = this.element.find(".content textarea").val();
-        console.log(markdown);
-        this.element.find(".content").html("");
-        initProsemirror(this.element, this.viewModel, markdown);
-      }
+      this.editorHandler.toggleView();
 
     }
   }
 });
-
-function initProsemirror(element, viewModel, markdown){
-
-
-
-  var editor = viewModel.editor = new EditorView(element[0].querySelector(".content"), {
-    state : prosemirrorHandler.initialState(schema, markdown),
-    
-    dispatchTransaction : function(tr){
-      
-      var newState = editor.state.apply(tr);
-      editor.updateState(newState)
-
-      var commandState = getCommandState(schema, editor);
-      viewModel.commands.attr(commandState);
-      //menu.markMenu(newState, viewModel);
-    },
-    handleDOMEvents : {
-      mousedown : function(view, event){
-        
-        if(element.is('on-edit')){
-          return;
-        }
-        var el = event.srcElement;
-        if(el.href){
-          window.open(el.href,'_blank');
-          event.preventDefault();
-          return true;
-        }
-      }
-    },
-    editable : function(){
-      return true;
-    },
-    
-    onFocus : function(editor, event){
-      element.addClass('on-edit')
-    },
-    onBlur : function(editor, event){
-      console.log('onBlur')
-      element.removeClass('on-edit')
-    },
-    nodeViews: {
-      reference(node, view, getPos) {
-        return new ReferenceView(node, view, getPos)
-      },
-      referenceSearch(node, view, getPos) {
-        return new ReferenceSearchView(node, view, getPos)
-      }
-    }
-  })
-  editor.customEventHandler = function(event, node){
-    console.log('handle custom event ' + event + ' for ' +node )
-  }
-  var commands = getCommandState(schema, editor);
-  viewModel.commands.attr(commands);
-  //menu.initCommands(viewModel.commands, schema);
-}

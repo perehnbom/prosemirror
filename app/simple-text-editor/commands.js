@@ -7,24 +7,25 @@ var runners = {
   em : (schema, editor) => toggleMark(schema.marks.em)(editor.state, editor.dispatch),
   undo : (schema, editor) => undo(editor.state, editor.dispatch),
   redo : (schema, editor) => redo(editor.state, editor.dispatch),
-  heading : function(schema, level){
+  heading : function(schema, editor, level){
+    var f;
     if(level === 'paragraph'){
-      return setBlockType(schema.nodes.paragraph);
+      setBlockType(schema.nodes.paragraph)(editor.state, editor.dispatch);
     }else{
-      return setBlockType(schema.nodes.heading, {
+      setBlockType(schema.nodes.heading, {
         level : level
-      })
+      })(editor.state, editor.dispatch)
     }
   },
-  
+
   bullet_list : (schema, editor) => wrapInList(schema.nodes.bullet_list)(editor.state, editor.dispatch),
   ordered_list : (schema, editor) => wrapInList(schema.nodes.ordered_list)(editor.state, editor.dispatch),
-  
+
   referenceSearch : function(schema, editor){
     return editor.dispatch(editor.state.tr.replaceSelectionWith(schema.nodes.referenceSearch.create({})))
   },
   reference : function(schema, editor, reference){
-  
+
     editor.dispatch(editor.state.tr.replaceSelectionWith(schema.nodes.reference.create({ref: reference})))
     //editor.focus()
   },
@@ -32,7 +33,7 @@ var runners = {
     var markType = schema.marks.link,
       state = editor.state,
       dispatch = editor.dispatch;
-  
+
     if (markActive(state, markType)) {
       toggleMark(markType)(state, dispatch)
     }else{
@@ -40,15 +41,32 @@ var runners = {
         href : 'http://www.google.com',
         title : ''
       }
-      
+
       let {empty, from, to, $from, $to} = state.selection,
-        content = Fragment.empty
-        
+        linkText,
+        tr = state.tr;
+
       if (!empty && $from.sameParent($to) && $from.parent.inlineContent){
-        content = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
+        var fragment = $from.parent.content.cut($from.parentOffset, $to.parentOffset)
+        linkText = fragment.content[0].text;
+      }else{
+        from = to
       }
-      toggleMark(markType, attrs)(state, dispatch)
-      editor.focus();      
+
+      if(!linkText){
+        linkText = 'link text'
+      }
+
+
+      tr = tr.insertText(linkText, from, to)
+      tr = tr.addMark(from, from + linkText.length, markType.create(attrs))
+
+      //result = result.addMark(from, to, schema.marks.strong.create())
+      //result = result.insertText('testtext', from, to)
+      dispatch(tr.scrollIntoView())
+
+      //toggleMark(markType, attrs)(state, dispatch)
+      editor.focus();
     }
   }
 }
@@ -63,15 +81,6 @@ function markActive(state, type) {
   }
 }
 
-
-function runCommand(schema, editor, command, option){
-  /*
-  var run = runners[command](schema, option);
-  return run(editor.state, editor.dispatch, editor);
-  */
-  var run = runners[command];
-  return run(schema, editor, option);
-}
 
 
 function getCommands(){
@@ -117,6 +126,5 @@ function getCommandState(schema, editor){
 }
 
 
-
+exports.runners = runners;
 exports.getCommandState = getCommandState;
-exports.runCommand = runCommand;
